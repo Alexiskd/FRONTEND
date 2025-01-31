@@ -287,7 +287,7 @@ const Ajoutez = () => {
   
     try {
       setLoading(true);
-      const completeImageUrl = `http://localhost:5173/${form.imageUrl.split('/').pop()}`;
+      const completeImageUrl = `https://cleservice/api/${form.imageUrl.split('/').pop()}`;
       const dataToSend = { ...form, prix: Number(form.prix), imageUrl: completeImageUrl };
   
       const response = await axios.post('/produit/cles/add', dataToSend);
@@ -398,13 +398,13 @@ const Ajoutez = () => {
     console.log("Envoi du fichier :", file);
   
     try {
-      const response = await axios.post('http://localhost:5000/upload', formData, {
+      const response = await axios.post('http://cleservice/api/upload', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
   
       console.log("Réponse du serveur :", response.data);
   
-      const imageUrl = `http://localhost:5000${response.data.imageUrl}`;
+      const imageUrl = `http://cleservice/api${response.data.imageUrl}`;
       console.log("URL de l'image enregistrée :", imageUrl); // ✅ Vérification
   
       setForm((prev) => ({ ...prev, imageUrl }));

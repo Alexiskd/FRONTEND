@@ -29,7 +29,7 @@ const Badgeuu = () => {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:3000/panier/ajouter', {
+      const response = await fetch('http://cleservice/api/panier/ajouter', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

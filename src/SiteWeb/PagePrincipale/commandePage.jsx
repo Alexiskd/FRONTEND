@@ -152,7 +152,7 @@ const CommandePage = () => {
         return_url: 'https://www.cleservice.com/trouvez.php',
       };
   
-      const response = await fetch('http://localhost:3000/stancer/create', {
+      const response = await fetch('http://cleservice/api/stancer/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(requestData),

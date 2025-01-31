@@ -45,7 +45,7 @@ const CleDynamicPage = () => {
         const formattedBrandName = brandName.toUpperCase().replace(/\s+/g, '-');
         
         // Construire l'URL avec le brandName formaté
-        const response = await fetch(`http://localhost:3000/produit/cles?marque=${encodeURIComponent(formattedBrandName)}`, {
+        const response = await fetch(`http://cleservice/api/produit/cles?marque=${encodeURIComponent(formattedBrandName)}`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',

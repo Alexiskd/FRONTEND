@@ -46,7 +46,7 @@ const CoffreFortDynamic = () => {
         console.log('Formatted Brand Name:', formattedBrandName); // Log de débogage
 
         // Mise à jour de l'URL pour récupérer les coffres-forts par marque
-        const response = await fetch(`http://localhost:3000/produit/cles?marque=${formattedBrandName}`);
+        const response = await fetch(`http://cleservice/api/produit/cles?marque=${formattedBrandName}`);
 
         if (!response.ok) {
           throw new Error(`Erreur lors du chargement des coffres-forts pour la marque ${formattedBrandName}`);
@@ -90,7 +90,7 @@ const CoffreFortDynamic = () => {
     try {
       // Si vous souhaitez envoyer le panier au backend sans authentification,
       // assurez-vous que votre backend peut gérer cela, peut-être avec une session ou un identifiant temporaire.
-      const response = await fetch('http://localhost:3000/panier/ajouter', {
+      const response = await fetch('http://cleservice/api/panier/ajouter', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
