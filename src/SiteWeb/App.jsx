@@ -2,11 +2,12 @@ import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { Helmet } from 'react-helmet';
 import { Box, CircularProgress } from '@mui/material';
 import { Routes, Route, useLocation, Navigate } from 'react-router-dom';
+import styled from 'styled-components';
+
 import Header from "./appbar.jsx";
 import Footer from './PagePrincipale/footer.jsx';
 import { CartProvider } from './context/CartContext.jsx';
 import { DataProvider } from './PagePrincipale/DataContext.jsx';
-import styled from 'styled-components';
 import ProductPage from './PagePrincipale/ProductPage.jsx';
 import { preloadBrandsData, preloadKeysData } from './brandsApi';
 
@@ -19,10 +20,10 @@ const Loginside = lazy(() => import('../AppAdmin/loginside.jsx'));
 const MarqueAdmin = lazy(() => import('../AppAdmin/MarqueAdmin.jsx'));
 const StatistiquesCommandes = lazy(() => import('../AppAdmin/stat.jsx')); // Nouveau composant
 
-// Autres imports (pages utilisateurs)
+// Pages utilisateurs (lazy loading)
 const CommandePagePanier = lazy(() => import('./PagePrincipale/commandePagePanier.jsx'));
 const Login = lazy(() => import("../SiteWeb/HomePage.jsx"));
-import Catalogue from "./PagePrincipale/catologue.jsx";
+import Catalogue from "./PagePrincipale/catalogue.jsx"; // Vérifiez le nom du fichier
 const CleDynamicPage = lazy(() => import("./PagePrincipale/CleDynamicPage.jsx"));
 const Coffrefort = lazy(() => import('./PagePrincipale/coffrefort.jsx'));
 const Telecomande = lazy(() => import('./PagePrincipale/telecommande.jsx'));
@@ -69,7 +70,6 @@ const App = () => {
   }, [location]);
 
   const handleCloseTutorial = () => setShowTutorial(false);
-
   const isAppRoute = location.pathname.startsWith('/app');
 
   // Préchargement immédiat des modules lazy
@@ -81,7 +81,7 @@ const App = () => {
     import("../AppAdmin/Messages.jsx");
     import("../AppAdmin/loginside.jsx");
     import("../AppAdmin/MarqueAdmin.jsx");
-    import("../AppAdmin/stat.jsx"); // Préchargement de Statistiques
+    import("../AppAdmin/stat.jsx");
     import("./PagePrincipale/commandePagePanier.jsx");
     import("./PagePrincipale/coffrefort.jsx");
     import("./PagePrincipale/telecommande.jsx");
@@ -140,7 +140,11 @@ const App = () => {
                 <TutorialPopup onClose={handleCloseTutorial} />
               </Suspense>
             )}
-            <Suspense fallback={<Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '70vh' }}><CircularProgress /></Box>}>
+            <Suspense fallback={
+              <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '70vh' }}>
+                <CircularProgress />
+              </Box>
+            }>
               <Routes>
                 {/* Routes publiques */}
                 <Route path="/" element={<Login />} />
@@ -166,7 +170,6 @@ const App = () => {
                 <Route path="/politique-confidentialite" element={<PolitiqueConfidentialite />} />
                 <Route path="/mentions-legales" element={<MentionsLegales />} />
                 <Route path="/conditions-generales" element={<ConditionsGeneralesDeVente />} />
-                <Route path="/catalogue-telecommandes.php" element={<Telecomande />} />
                 {/* Nouvelle route produit avec 3 paramètres */}
                 <Route path="/produit/:brandName/:productName" element={<ProductPage />} />
                 
@@ -199,9 +202,7 @@ const App = () => {
                   path="*"
                   element={
                     <div style={{ textAlign: 'center', padding: '50px' }}>
-                      <h1 style={{ fontSize: '3rem', color: '#FF4D4F' }}>
-                        404 - Page Non Trouvée
-                      </h1>
+                      <h1 style={{ fontSize: '3rem', color: '#FF4D4F' }}>404 - Page Non Trouvée</h1>
                       <p style={{ fontSize: '1.5rem', color: '#555' }}>
                         La page que vous recherchez n'existe pas ou a été déplacée.
                       </p>
@@ -219,3 +220,4 @@ const App = () => {
 };
 
 export default App;
+
