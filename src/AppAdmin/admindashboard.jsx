@@ -3,7 +3,8 @@ import React from 'react';
 import { Box, Toolbar } from '@mui/material';
 import { Routes, Route } from 'react-router-dom';
 import Barreadmin from './barreadmin.jsx';
-import Ajoutez from './ajoutez.jsx'; // Import de la nouvelle composante
+import Ajoutez from './ajoutez.jsx';
+import Commande from './commande.jsx';
 
 const drawerWidth = 240;
 
@@ -13,7 +14,7 @@ const AdminDashboard = () => {
       {/* Barre de navigation latérale */}
       <Barreadmin />
 
-      {/* Contenu principal */}
+      {/* Contenu principal centré */}
       <Box
         component="main"
         sx={{
@@ -21,12 +22,17 @@ const AdminDashboard = () => {
           bgcolor: 'background.default',
           p: 3,
           ml: `${drawerWidth}px`,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
         }}
       >
         <Toolbar />
         <Routes>
-          {/* Route pour la nouvelle composante Ajoutez */}
-          <Route path="/app/admin/ajouter" element={<Ajoutez />} />
+          <Route path="ajouter" element={<Ajoutez />} />
+          
+          {/* Vous pouvez ajouter d'autres routes ici */}
         </Routes>
       </Box>
     </Box>

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Box, Typography, Container, Button, Stack, List, ListItem, ListItemIcon, ListItemText } from '@mui/material';
 import ArrowRightIcon from '@mui/icons-material/ArrowRight';
-import back from "./backp.png";
+
 
 const AutreService = () => {
   return (
@@ -10,7 +10,7 @@ const AutreService = () => {
       {/* Header */}
       <Box 
         style={{
-          backgroundImage: `url(${back})`,
+          
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',

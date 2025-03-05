@@ -42,7 +42,7 @@ const AuthenticationBar = () => {
   const fetchUserInfo = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://cleservice/api/auth/me', {
+      const response = await fetch('https://cl-back.onrender.com/api/auth/me', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',

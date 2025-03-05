@@ -1,95 +1,186 @@
-import React, { useState } from 'react';
-import { AppBar, Toolbar, Button, Typography, Box, IconButton, Drawer, List, ListItem, ListItemText } from '@mui/material';
+import React, { useState, useEffect } from 'react';
+import {
+  AppBar,
+  Toolbar,
+  Button,
+  Typography,
+  Box,
+  IconButton,
+  Drawer,
+  List,
+  ListItem,
+  ListItemText,
+} from '@mui/material';
 import { Link } from 'react-router-dom';
-import MenuIcon from '@mui/icons-material/Menu'; // Icône hamburger pour le menu mobile
-import logo from './icon2.png'; // Remplace par le chemin de ton logo
-import Cart from './UserPA/cart.jsx'; // Import de la composante Cart
+import MenuIcon from '@mui/icons-material/Menu';
+import logo from './icon2.png';
+import Cart from './UserPA/cart.jsx';
+
+const primaryColor = '#4E342E';
+
+const gradientText = {
+  background: 'linear-gradient(90deg, #15720a, #000)',
+  WebkitBackgroundClip: 'text',
+  WebkitTextFillColor: 'transparent',
+};
 
 const Header = () => {
-  const [open, setOpen] = useState(false); // Gère l'état d'ouverture du menu mobile
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
-  // Fonction pour ouvrir/fermer le menu
-  const toggleDrawer = (open) => {
-    setOpen(open);
+  const toggleDrawer = (openState) => {
+    setDrawerOpen(openState);
   };
+
+  const navItems = [
+    { label: 'Accueil', to: '/' },
+    { label: 'Qui sommes-nous ?', to: '/qui.php' },
+    { label: 'Catalogue', to: '/trouvez.php' },
+    { label: 'Coffre Fort', to: '/catalogue-cles-coffre.php' },
+    { label: 'Badges', to: '/badges.php' },
+    { label: 'Contact', to: '/contact.php' },
+  ];
 
   return (
     <div>
-      <AppBar position="static" sx={{ backgroundColor: '#025920', boxShadow: 'none' }}>
-        <Toolbar sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-          {/* Box pour le logo et le texte */}
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <img src={logo} alt="Logo" style={{ height: '40px', marginRight: '10px' }} />
-            <Typography variant="h6" sx={{ color: '#fff', fontWeight: '600', fontSize: '1.25rem' }}>
+      <AppBar
+        position="fixed"
+        sx={{
+          background: 'linear-gradient(100deg, #f4f4cc, #1B5E20)',
+          boxShadow: '0px 4px 20px rgba(0, 0, 0, 0.1)',
+          top: 0,
+          left: 0,
+          right: 0,
+          zIndex: (theme) => theme.zIndex.drawer + 1, // S'assurer que le header est au-dessus
+        }}
+      >
+        <Toolbar
+          sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            px: { xs: 2, md: 4 },
+            py: { xs: 1, md: 2 },
+          }}
+        >
+          {/* Logo et titre */}
+          <Box
+            component={Link}
+            to="/"
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              textDecoration: 'none',
+            }}
+          >
+            <Box
+              component="img"
+              src={logo}
+              alt="Logo"
+              sx={{ height: { xs: '35px', md: '45px' }, mr: 1 }}
+            />
+            <Typography
+              variant="h6"
+              sx={{
+                fontWeight: 600,
+                fontSize: { xs: '1.2rem', md: '1.75rem' },
+                letterSpacing: '0.5px',
+                ...gradientText,
+              }}
+            >
               Cleservice.com
             </Typography>
           </Box>
 
-          {/* Menu hamburger pour mobile */}
-          <IconButton 
-            color="inherit" 
-            aria-label="menu" 
-            onClick={() => toggleDrawer(true)} 
-            sx={{ display: { xs: 'block', md: 'none' } }} // Afficher seulement sur mobile
+          {/* Bouton menu pour mobile */}
+          <IconButton
+            color="inherit"
+            aria-label="menu"
+            onClick={() => toggleDrawer(true)}
+            sx={{ display: { xs: 'block', md: 'none' }, color: '#000' }}
           >
-            <MenuIcon />
+            <MenuIcon sx={{ fontSize: { xs: '1.5rem', md: '1.8rem' } }} />
           </IconButton>
 
-          {/* Menu pour les grandes tailles d'écran */}
-          <Box sx={{ display: { xs: 'none', md: 'flex' }, justifyContent: 'flex-end', width: '100%' }}>
-            <Button color="inherit" component={Link} to="/" sx={{ fontWeight: '500', marginLeft: '15px' }}>
-              Home
-            </Button>
-            <Button color="inherit" component={Link} to="/qui-sommes-nous.php" sx={{ fontWeight: '500', marginLeft: '15px' }}>
-              Qui sommes-nous ?
-            </Button>
-            <Button color="inherit" component={Link} to="/trouvez.php" sx={{ fontWeight: '500', marginLeft: '15px' }}>
-              Catalogue
-            </Button>
-            <Button color="inherit" component={Link} to="/catalogue-cles-coffre.php" sx={{ fontWeight: '500', marginLeft: '15px' }}>
-              Coffre Fort
-            </Button>
-            <Button color="inherit" component={Link} to="/badges.php" sx={{ fontWeight: '500', marginLeft: '15px' }}>
-              Badges
-            </Button>
-            <Button color="inherit" component={Link} to="/contact.php" sx={{ fontWeight: '500', marginLeft: '15px' }}>
-              Contact
-            </Button>
-            {/* Composante Cart ajoutée ici */}
-            <Cart />
+          {/* Liens de navigation et composant panier (affichés en horizontal pour md et plus) */}
+          <Box
+            sx={{
+              display: { xs: 'none', md: 'flex' },
+              alignItems: 'center',
+              gap: '20px',
+            }}
+          >
+            {navItems.map((item, index) => (
+              <Button
+                key={index}
+                component={Link}
+                to={item.to}
+                sx={{
+                  fontWeight: 600,
+                  fontSize: { xs: '0.9rem', md: '1.1rem' },
+                  padding: '8px 16px',
+                  textTransform: 'none',
+                  transition: 'transform 0.7s ease-in-out',
+                  '&:hover': { transform: 'scale(1.05)' },
+                  ...gradientText,
+                }}
+              >
+                {item.label}
+              </Button>
+            ))}
+
+            
           </Box>
         </Toolbar>
       </AppBar>
 
-      {/* Menu déroulant pour mobile */}
-      <Drawer anchor="right" open={open} onClose={() => toggleDrawer(false)}>
+      {/* Drawer pour mobile */}
+      <Drawer
+        anchor="right"
+        open={drawerOpen}
+        onClose={() => toggleDrawer(false)}
+        PaperProps={{
+          sx: {
+            backgroundColor: primaryColor,
+            color: '#fff',
+            width: 250,
+          },
+        }}
+      >
         <Box
-          sx={{ width: 250 }}
+          sx={{
+            width: 250,
+            p: 2,
+          }}
           role="presentation"
-          onClick={() => toggleDrawer(false)} // Ferme le menu lorsqu'on clique sur un élément
+          onClick={() => toggleDrawer(false)}
+          onKeyDown={() => toggleDrawer(false)}
         >
           <List>
-            <ListItem button component={Link} to="/" sx={{ padding: '10px 20px' }}>
-              <ListItemText primary="Home" />
-            </ListItem>
-            <ListItem button component={Link} to="/qui-sommes-nous.php" sx={{ padding: '10px 20px' }}>
-              <ListItemText primary="Qui sommes-nous ?" />
-            </ListItem>
-            <ListItem button component={Link} to="/trouvez.php" sx={{ padding: '10px 20px' }}>
-              <ListItemText primary="Catalogue" />
-            </ListItem>
-            <ListItem button component={Link} to="/coffrefort-dynamic" sx={{ padding: '10px 20px' }}>
-              <ListItemText primary="Coffre Fort" />
-            </ListItem>
-            <ListItem button component={Link} to="/catalogue-telecommandes.php" sx={{ padding: '10px 20px' }}>
-              <ListItemText primary="Telecommande" />
-            </ListItem>
-            <ListItem button component={Link} to="/badges.php" sx={{ padding: '10px 20px' }}>
-              <ListItemText primary="Badges" />
-            </ListItem>
-            <ListItem button component={Link} to="/contact.php" sx={{ padding: '10px 20px' }}>
-              <ListItemText primary="Contact" />
-            </ListItem>
+            {navItems.map((item, index) => (
+              <ListItem
+                button
+                component={Link}
+                to={item.to}
+                key={index}
+                sx={{
+                  py: 1,
+                  transition: 'background-color 0.3s ease, transform 0.3s ease',
+                  '&:hover': {
+                    backgroundColor: '#5D4037',
+                    borderRadius: '8px',
+                    transform: 'scale(1.02)',
+                  },
+                }}
+              >
+                <ListItemText
+                  primary={
+                    <Typography variant="body1" sx={{ color: '#fff' }}>
+                      {item.label}
+                    </Typography>
+                  }
+                />
+              </ListItem>
+            ))}
           </List>
         </Box>
       </Drawer>

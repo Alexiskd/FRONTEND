@@ -119,37 +119,39 @@ const Cart = ({ onCartClick }) => {
             onMouseLeave: handleMouseLeave,
           }}
         >
-          {cartItems.length > 0 ? (
-            <>
-              {cartItems.map((item, index) => (
-                <CartMenuItem key={index}>
-                  <Typography variant="body1">
-                    {item.nom_article || item.name || 'Nom Indéfini'}
-                  </Typography>
+          {cartItems.length > 0
+            ? [
+                // Transformation des items en tableau d'éléments
+                ...cartItems.map((item, index) => (
+                  <CartMenuItem key={index}>
+                    <Typography variant="body1">
+                      {item.nom_article || item.name || 'Nom Indéfini'}
+                    </Typography>
 
-                  <Typography variant="body2" color="text.secondary">
-                    {item.quantite || 1} x {item.price ? `${item.price} €` : 'Prix non défini'}
-                  </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      {item.quantite || 1} x {item.price ? `${item.price} €` : 'Prix non défini'}
+                    </Typography>
 
-                  <RemoveButton onClick={() => handleRemoveItem(item)}>
-                    Supprimer
-                  </RemoveButton>
-                </CartMenuItem>
-              ))}
-
-              <MenuItem disableGutters>
-                <CommanderButton onClick={handleCommander}>
-                  Commander
-                </CommanderButton>
-              </MenuItem>
-            </>
-          ) : (
-            <CartMenuItem>
-              <Typography variant="body2" color="text.secondary">
-                Votre panier est vide.
-              </Typography>
-            </CartMenuItem>
-          )}
+                    <RemoveButton onClick={() => handleRemoveItem(item)}>
+                      Supprimer
+                    </RemoveButton>
+                  </CartMenuItem>
+                )),
+                // Ajout du bouton "Commander"
+                <MenuItem disableGutters key="commander">
+                  <CommanderButton onClick={handleCommander}>
+                    Commander
+                  </CommanderButton>
+                </MenuItem>
+              ]
+            : (
+              <CartMenuItem>
+                <Typography variant="body2" color="text.secondary">
+                  Votre panier est vide.
+                </Typography>
+              </CartMenuItem>
+            )
+          }
         </StyledMenu>
       </CartWrapper>
     </>

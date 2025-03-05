@@ -1,284 +1,482 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react'; 
 import {
   Box,
   Typography,
   Container,
-  Grid,
+  Card,
+  CardMedia,
+  CardContent,
   Button,
   TextField,
   Snackbar,
   Alert,
+  Skeleton,
+  Grid,
+  Dialog,
+  DialogContent
 } from '@mui/material';
 import { useParams, useNavigate } from 'react-router-dom';
-import back from "./backp.png";
-import { CartContext } from '../context/CartContext.jsx';
+import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
+import LocalShippingIcon from '@mui/icons-material/LocalShipping';
+import { preloadKeysData } from '../brandsApi';
+import PhoneNumber from './PhoneNumber';
+
+// Hook de debounce pour la saisie utilisateur
+function useDebounce(value, delay) {
+  const [debouncedValue, setDebouncedValue] = useState(value);
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedValue(value), delay);
+    return () => clearTimeout(timer);
+  }, [value, delay]);
+  return debouncedValue;
+}
 
 const CleDynamicPage = () => {
-  const { brandName } = useParams();
+  const { brandFull } = useParams();
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
+  const debouncedSearchTerm = useDebounce(searchTerm, 300);
   const [keys, setKeys] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
-  // États pour les notifications
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarSeverity, setSnackbarSeverity] = useState('success');
+  const [brandLogo, setBrandLogo] = useState(null);
 
-  // Accéder au contexte du panier
-  const { addToCart } = useContext(CartContext);
+  // États pour le popup et le zoom
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalImageSrc, setModalImageSrc] = useState('');
+  const [scale, setScale] = useState(1);
+
+  // Redirection si le paramètre ressemble à un slug produit (commence par un chiffre suivi d'un tiret)
+  useEffect(() => {
+    if (/^\d+-/.test(brandFull)) {
+      const parts = brandFull.split("-");
+      if (parts.length >= 3) {
+        const brand = parts[0];
+        const productName = parts.slice(2).join("-");
+        navigate(`/produit/${brand}/${encodeURIComponent(productName)}`);
+      } else {
+        navigate(`/produit/${encodeURIComponent(brandFull)}`);
+      }
+      return;
+    }
+  }, [brandFull, navigate]);
+
+  // Extraction et normalisation du nom de la marque (si ce n'est pas un slug produit)
+  const suffix = '_1_reproduction_cle.html';
+  const actualBrandName = brandFull.endsWith(suffix)
+    ? brandFull.slice(0, -suffix.length)
+    : brandFull;
+  const adjustedBrandName = actualBrandName.toUpperCase();
+
+  // Fonction pour obtenir l'URL d'une image
+  const getImageSrc = useCallback((imageUrl) => {
+    if (!imageUrl || imageUrl.trim() === '') return '';
+    if (imageUrl.startsWith('data:')) return imageUrl;
+    if (!imageUrl.startsWith('http')) return `https://cl-back.onrender.com/${imageUrl}`;
+    return imageUrl;
+  }, []);
+
+  // Récupération du logo pour la marque
+  useEffect(() => {
+    if (/^\d+-/.test(brandFull)) return;
+    if (!actualBrandName) return;
+    fetch(`https://cl-back.onrender.com/brands/logo/${encodeURIComponent(actualBrandName)}`)
+      .then((res) => {
+        if (res.ok) return res.blob();
+        throw new Error(`Logo non trouvé pour ${actualBrandName}`);
+      })
+      .then((blob) => {
+        const logoUrl = URL.createObjectURL(blob);
+        setBrandLogo(logoUrl);
+      })
+      .catch((error) => {
+        console.error("Erreur lors du chargement du logo:", error);
+        setBrandLogo(null);
+      });
+  }, [actualBrandName, brandFull]);
 
   useEffect(() => {
-    if (!brandName) {
-      setError('La marque n\'a pas été fournie.');
+    window.scrollTo(0, 0);
+  }, []);
+
+  // Chargement initial des clés via preloadKeysData
+  useEffect(() => {
+    if (/^\d+-/.test(brandFull)) {
       setLoading(false);
       return;
     }
-
-    const fetchKeysByBrand = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-
-        // Formater le brandName : majuscules et remplacer les espaces par des tirets
-        const formattedBrandName = brandName.toUpperCase().replace(/\s+/g, '-');
-        
-        // Construire l'URL avec le brandName formaté
-        const response = await fetch(`http://cleservice/api/produit/cles?marque=${encodeURIComponent(formattedBrandName)}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.message || `Erreur lors du chargement des clés pour la marque ${formattedBrandName}`);
-        }
-
-        const data = await response.json();
-
-        // Décoder le nom de chaque clé
-        const decodedData = data && Array.isArray(data) 
-          ? data.map(item => ({
-              ...item,
-              nom: decodeURIComponent(item.nom),
-              type_article: 'cle', // Ajout du type par défaut
-            })) 
-          : [];
-
-        setKeys(decodedData);
-      } catch (err) {
+    if (!adjustedBrandName) {
+      setError("La marque n'a pas été fournie.");
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    preloadKeysData(adjustedBrandName)
+      .then((data) => {
+        setKeys(data);
+      })
+      .catch((err) => {
+        console.error('Erreur lors du chargement des clés:', err);
         setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
+        setSnackbarMessage(`Erreur: ${err.message}`);
+        setSnackbarSeverity('error');
+        setSnackbarOpen(true);
+      })
+      .finally(() => setLoading(false));
+  }, [adjustedBrandName, brandFull]);
 
-    fetchKeysByBrand();
-  }, [brandName]);
+  // Préchargement des images des clés
+  useEffect(() => {
+    keys.forEach((item) => {
+      const img = new Image();
+      img.src = getImageSrc(item.imageUrl);
+    });
+  }, [keys, getImageSrc]);
 
-  const handleSearchChange = (event) => {
+  const handleSearchChange = useCallback((event) => {
     setSearchTerm(event.target.value);
-  };
+  }, []);
 
-  const filteredKeys = keys.filter((item) =>
-    item.nom.toLowerCase().includes(searchTerm.toLowerCase())
+  // Filtrage des clés selon la recherche et inversion de l'ordre pour afficher les derniers en premier
+  const filteredKeys = useMemo(() => {
+    return keys
+      .filter((item) =>
+        item.nom.toLowerCase().includes(debouncedSearchTerm.toLowerCase())
+      )
+      .slice()
+      .reverse();
+  }, [keys, debouncedSearchTerm]);
+
+  // Redirection vers la page de commande
+  const handleOrderNow = useCallback(
+    (item, mode) => {
+      try {
+        const formattedName = item.nom.trim().replace(/\s+/g, '-');
+        navigate(
+          `/commander/${adjustedBrandName.replace(/\s+/g, '-')}/cle/${item.referenceEbauche}/${encodeURIComponent(
+            formattedName
+          )}?mode=${mode}`
+        );
+      } catch (error) {
+        console.error('Erreur lors de la navigation vers la commande:', error);
+        setSnackbarMessage(`Erreur lors de la commande: ${error.message}`);
+        setSnackbarSeverity('error');
+        setSnackbarOpen(true);
+      }
+    },
+    [adjustedBrandName, navigate]
   );
 
-  const handleAddToCart = (item) => {
-    console.log('Données de l\'article envoyé à addToCart :', item);
+  // Redirection vers la page produit (lorsqu'on clique sur le nom ou le bouton "Voir le produit")
+  const handleViewProduct = useCallback(
+    (item) => {
+      const formattedName = item.nom.trim().replace(/\s+/g, '-');
+      const formattedBrand = item.marque.trim().replace(/\s+/g, '-');
+      navigate(`/produit/${formattedBrand}/${encodeURIComponent(formattedName)}`);
+    },
+    [navigate]
+  );
 
-    if (!item.nom || !item.type_article) {
-      console.error('Les champs requis ne sont pas présents dans l\'article.');
-      setSnackbarMessage('Erreur : Les informations de l\'article sont incomplètes.');
-      setSnackbarSeverity('error');
-      setSnackbarOpen(true);
-      return;
-    }
+  // Ouvre le popup d'agrandissement de l'image et réinitialise le zoom
+  const openImageModal = useCallback(
+    (item) => {
+      setModalImageSrc(getImageSrc(item.imageUrl));
+      setScale(1);
+      setModalOpen(true);
+    },
+    [getImageSrc]
+  );
 
-    addToCart({
-      nom_article: item.nom,
-      type_article: item.type_article,
-    });
-
-    setSnackbarMessage('Article ajouté au panier avec succès !');
-    setSnackbarSeverity('success');
-    setSnackbarOpen(true);
-  };
-
-  const handleOrderNow = (item) => {
-    const formattedBrandName = brandName.toUpperCase().replace(/\s+/g, '-');
-    const encodedBrandName = encodeURIComponent(formattedBrandName);
-    const articleType = 'cle'; // Puisque nous sommes dans CleDynamicPage
-    const encodedArticleType = encodeURIComponent(articleType);
-    const encodedArticleName = encodeURIComponent(item.nom);
-    navigate(`/commander/${encodedBrandName}/${encodedArticleType}/${encodedArticleName}`);
-  };
-
-  const handleCloseSnackbar = (event, reason) => {
-    if (reason === 'clickaway') {
-      return;
-    }
+  const handleCloseSnackbar = useCallback((event, reason) => {
+    if (reason === 'clickaway') return;
     setSnackbarOpen(false);
-  };
+  }, []);
+
+  // Gestion du zoom avec la roulette de la souris
+  const handleWheel = useCallback((event) => {
+    event.preventDefault();
+    setScale((prevScale) => {
+      let newScale = prevScale + (event.deltaY < 0 ? 0.1 : -0.1);
+      newScale = Math.max(0.5, Math.min(newScale, 3)); // Limites du zoom
+      return newScale;
+    });
+  }, []);
+
+  // Styles et configuration de la grille
+  const styles = useMemo(
+    () => ({
+      page: {
+        backgroundColor: '#fafafa',
+        minHeight: '100vh',
+        paddingBottom: '24px',
+      },
+      searchContainer: {
+        marginTop: { xs: '20px', sm: '40px' },
+        marginBottom: '24px',
+      },
+      gridContainer: {
+        padding: '16px 0',
+      },
+      card: {
+        backgroundColor: '#fff',
+        borderRadius: '12px',
+        boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.1)',
+        transition: 'transform 0.2s, box-shadow 0.2s',
+        display: 'flex',
+        flexDirection: 'column',
+        height: '100%',
+        minHeight: '400px',
+        width: '100%',
+        flex: 1,
+      },
+      cardMedia: {
+        height: 180,
+        objectFit: 'contain',
+        backgroundColor: '#fff',
+        borderTopLeftRadius: '12px',
+        borderTopRightRadius: '12px',
+      },
+      cardContent: {
+        flexGrow: 1,
+        padding: { xs: '8px', sm: '16px' },
+        fontFamily: 'Montserrat, sans-serif',
+        textAlign: 'left',
+      },
+      productName: {
+        fontSize: '1.2rem',
+        fontWeight: 700,
+        marginBottom: 0,
+        color: '#333',
+        cursor: 'pointer',
+      },
+      brandName: {
+        fontSize: '0.9rem',
+        color: '#777',
+        marginBottom: '8px',
+      },
+      pricesContainer: {
+        display: 'flex',
+        gap: '8px',
+        marginTop: '12px',
+      },
+      priceBadge: {
+        backgroundColor: '#e8f5e9',
+        padding: '6px 12px',
+        borderRadius: '8px',
+        textAlign: 'center',
+        color: '#1B5E20',
+      },
+      buttonSecondary: {
+        borderRadius: '50px',
+        padding: '8px 16px',
+        fontFamily: 'Montserrat, sans-serif',
+        textTransform: 'none',
+        fontWeight: 600,
+        fontSize: '0.75rem',
+        boxShadow: 'none',
+        marginTop: '8px',
+      },
+      buttonContainer: {
+        padding: { xs: '8px', sm: '16px' },
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '8px',
+        mt: 'auto',
+      },
+      brandLogoContainer: {
+        position: 'absolute',
+        top: 8,
+        left: 8,
+        width: 32,
+        height: 32,
+        borderRadius: '50%',
+        overflow: 'hidden',
+        backgroundColor: '#fff',
+        boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+        zIndex: 2,
+      },
+    }),
+    []
+  );
 
   return (
-    <Box sx={{ backgroundColor: '#F2F2F2', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-      {/* Section Hero du Catalogue */}
-      <Box
-        style={{
-          backgroundImage: `url(${back})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat',
-          color: '#F2F2F2',
-          padding: '64px 0',
-        }}
-      >
-        <Container>
-          <Typography variant="h3" align="center" gutterBottom sx={{ fontFamily: 'Montserrat, sans-serif', fontWeight: '700' }}>
-            Clés pour la marque {brandName.toUpperCase().replace(/\s+/g, '-')}
-          </Typography>
-        </Container>
-      </Box>
-
-      {/* Barre de Recherche */}
-      <Container sx={{ py: 4 }}>
+    <Box sx={styles.page}>
+      <PhoneNumber />
+      <Container sx={styles.searchContainer}>
         <TextField
-          label="Rechercher une clé"
+          label="Tapez le numéro de votre clé"
           variant="outlined"
           fullWidth
           value={searchTerm}
           onChange={handleSearchChange}
-          sx={{ mb: 4 }}
         />
       </Container>
-
-      {/* Liste des Clés */}
-      {loading ? (
-        <Typography variant="h6" align="center">
-          Chargement des clés...
-        </Typography>
-      ) : error ? (
-        <Typography variant="h6" align="center" color="error">
-          {error}
-        </Typography>
-      ) : filteredKeys.length > 0 ? (
-        <Container sx={{ py: 2 }}>
-          <Grid container spacing={2}>
-            {filteredKeys.map((item, index) => (
-              <Grid item xs={12} sm={6} md={4} key={index}>
-                <Box
-                  sx={{
-                    backgroundColor: '#FFFFFF',
-                    padding: 3,
-                    borderRadius: 2,
-                    boxShadow: '0 10px 20px rgba(0, 0, 0, 0.1)',
-                    textAlign: 'center',
-                    transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-                    '&:hover': {
-                      transform: 'translateY(-5px)',
-                      boxShadow: '0 15px 30px rgba(0, 0, 0, 0.2)',
-                    },
-                  }}
-                >
-                  <Box
-                    sx={{
-                      width: '200px',
-                      height: '200px',
-                      backgroundColor: '#e0e0e0',
-                      borderRadius: '8px',
-                      margin: '0 auto 16px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                    }}
-                  >
-                    {item.imageUrl && item.imageUrl.trim() !== '' ? (
-                      <img
-                        src={item.imageUrl}
+      <Container maxWidth="xl">
+        {loading ? (
+          <Typography align="center" sx={{ fontFamily: 'Montserrat, sans-serif' }}>
+            Chargement...
+          </Typography>
+        ) : error ? (
+          <Typography align="center" color="error" sx={{ fontFamily: 'Montserrat, sans-serif' }}>
+            {error}
+          </Typography>
+        ) : filteredKeys.length > 0 ? (
+          <Grid container spacing={2} alignItems="stretch" justifyContent="center" sx={styles.gridContainer}>
+            {filteredKeys.map((item, index) => {
+              const numeroPrice = Number(item.prix);
+              const postalPrice = Number(item.prixSansCartePropriete);
+              return (
+                <Grid key={item.id || index} item xs={12} sm={6} md={4} lg={3} sx={{ display: 'flex' }}>
+                  <Card sx={styles.card}>
+                    {/* Clic sur la photo pour ouvrir le modal d'agrandissement */}
+                    <Box onClick={() => openImageModal(item)} sx={{ cursor: 'pointer', position: 'relative' }}>
+                      {brandLogo && (
+                        <Box sx={styles.brandLogoContainer}>
+                          <img
+                            src={brandLogo}
+                            alt={item.marque}
+                            style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                            onError={(e) => console.error(`Erreur de chargement du logo pour ${item.marque}:`, e)}
+                          />
+                        </Box>
+                      )}
+                      <CardMedia
+                        component="img"
+                        image={getImageSrc(item.imageUrl)}
                         alt={item.nom}
-                        style={{ width: '100%', height: '100%', borderRadius: '8px', objectFit: 'cover' }}
+                        sx={styles.cardMedia}
+                        onError={(e) => console.error("Erreur lors du chargement de l'image du produit:", e)}
                       />
-                    ) : (
-                      <Typography variant="body2" color="textSecondary">Aucune image disponible</Typography>
-                    )}
-                  </Box>
-
-                  <Typography variant="subtitle1" sx={{ fontFamily: 'Roboto, sans-serif', fontWeight: '500' }}>
-                    {item.nom}
-                  </Typography>
-                  <Typography variant="body1" sx={{ my: 2 }}>
-                    Prix : {item.prix ? `${item.prix} €` : 'Non disponible'}
-                  </Typography>
-                  {item.cleAvecCartePropriete && (
-                    <Typography variant="body2" color="textSecondary">
-                      Carte de propriété disponible
-                    </Typography>
-                  )}
-                  {/* Assurez-vous que `delai_fabrication` existe dans vos données ou supprimez cette ligne si non nécessaire */}
-                  {item.delai_fabrication && (
-                    <Typography variant="body2" color="textSecondary" sx={{ my: 2 }}>
-                      Délai de fabrication : {item.delai_fabrication || 'Non spécifié'}
-                    </Typography>
-                  )}
-
-                  <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2 }}>
-                    <Button
-                      type="button"
-                      variant="contained"
-                      sx={{
-                        backgroundColor: '#025920',
-                        '&:hover': {
-                          backgroundColor: '#014d16',
-                        },
-                        height: '40px',
-                        width: '230px',
-                      }}
-                      onClick={() => handleAddToCart(item)}
-                    >
-                      Ajouter au panier
-                    </Button>
-
-                    <Button
-                      type="button"
-                      variant="contained"
-                      sx={{
-                        backgroundColor: '#025920',
-                        '&:hover': {
-                          backgroundColor: '#014d16',
-                        },
-                        height: '40px',
-                      }}
-                      onClick={() => handleOrderNow(item)}
-                    >
-                      Commander
-                    </Button>
-                  </Box>
-                </Box>
-              </Grid>
-            ))}
+                      <Skeleton
+                        variant="rectangular"
+                        sx={{
+                          position: 'absolute',
+                          top: 0,
+                          left: 0,
+                          width: '100%',
+                          height: 180,
+                          borderTopLeftRadius: '12px',
+                          borderTopRightRadius: '12px',
+                        }}
+                      />
+                    </Box>
+                    <CardContent sx={styles.cardContent}>
+                      <Typography sx={styles.productName} onClick={() => handleViewProduct(item)}>
+                        {item.nom}
+                      </Typography>
+                      <Typography sx={styles.brandName}>{item.marque}</Typography>
+                      <Box sx={styles.pricesContainer}>
+                        {numeroPrice > 0 && (
+                          <Box sx={styles.priceBadge}>
+                            <Typography variant="caption">Copie chez le fabricant</Typography>
+                            <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                              {item.prix} €
+                            </Typography>
+                          </Box>
+                        )}
+                        {postalPrice > 0 && (
+                          <Box sx={styles.priceBadge}>
+                            <Typography variant="caption">Copie dans nos atelier</Typography>
+                            <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                              {item.prixSansCartePropriete} €
+                            </Typography>
+                          </Box>
+                        )}
+                      </Box>
+                    </CardContent>
+                    <Box sx={styles.buttonContainer}>
+                      {numeroPrice > 0 && (
+                        <Button
+                          variant="outlined"
+                          onClick={() => handleOrderNow(item, 'numero')}
+                          startIcon={<ConfirmationNumberIcon />}
+                          sx={{
+                            ...styles.buttonSecondary,
+                            borderColor: '#1B5E20',
+                            color: '#1B5E20',
+                            '&:hover': {
+                              backgroundColor: '#1B5E20',
+                              color: '#fff',
+                            },
+                          }}
+                        >
+                          Commander par numéro <br />(chez le fabricant)
+                        </Button>
+                      )}
+                      {postalPrice > 0 && (
+                        <Button
+                          variant="outlined"
+                          onClick={() => handleOrderNow(item, 'postal')}
+                          startIcon={<LocalShippingIcon />}
+                          sx={{
+                            ...styles.buttonSecondary,
+                            borderColor: '#1B5E20',
+                            color: '#1B5E20',
+                            '&:hover': {
+                              backgroundColor: '#1B5E20',
+                              color: '#fff',
+                            },
+                          }}
+                        >
+                          Commander reproduction dans nos atelier
+                        </Button>
+                      )}
+                      <Button variant="text" onClick={() => handleViewProduct(item)} sx={{ mt: 1, textTransform: 'none' }}>
+                        Voir le produit
+                      </Button>
+                    </Box>
+                  </Card>
+                </Grid>
+              );
+            })}
           </Grid>
-        </Container>
-      ) : (
-        <Typography variant="h6" align="center">
-          Aucune clé trouvée pour cette recherche.
-        </Typography>
-      )}
-
-      {/* Snackbar pour les notifications */}
+        ) : (
+          <Typography align="center" sx={{ fontFamily: 'Montserrat, sans-serif' }}>
+            Aucune clé trouvée.
+          </Typography>
+        )}
+      </Container>
       <Snackbar
         open={snackbarOpen}
         autoHideDuration={6000}
         onClose={handleCloseSnackbar}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
-        <Alert onClose={handleCloseSnackbar} severity={snackbarSeverity} sx={{ width: '100%' }}>
+        <Alert onClose={handleCloseSnackbar} severity={snackbarSeverity} sx={{ width: '100%', fontFamily: 'Montserrat, sans-serif' }}>
           {snackbarMessage}
         </Alert>
       </Snackbar>
+      
+      {/* Popup pour afficher l'image en grand avec zoom via la roulette */}
+      <Dialog open={modalOpen} onClose={() => setModalOpen(false)} maxWidth="lg">
+        <DialogContent>
+          <Box
+            onWheel={handleWheel}
+            sx={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              overflow: 'hidden',
+              // Permet de limiter la taille max de la zone de zoom
+              maxHeight: '80vh',
+            }}
+          >
+            <img
+              src={modalImageSrc}
+              alt="Agrandissement de la clé"
+              style={{
+                transform: `scale(${scale})`,
+                transition: 'transform 0.2s',
+                width: '100%',
+                height: 'auto',
+              }}
+            />
+          </Box>
+        </DialogContent>
+      </Dialog>
     </Box>
   );
 };

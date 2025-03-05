@@ -113,7 +113,7 @@ const Loginside = () => {
     setErrors({ email: "", password: "", general: "" });
 
     try {
-      const response = await fetch("http://cleservice/api/auth/login", {
+      const response = await fetch("https://cl-back.onrender.com/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(credentials),
@@ -164,7 +164,7 @@ const Loginside = () => {
 
     try {
       const response = await fetch(
-        "http://cleservice/api/users/reset-password-request",
+        "https://cl-back.onrender.com/users/reset-password-request",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -213,7 +213,7 @@ const Loginside = () => {
     setErrors({ email: "", password: "", general: "" });
 
     try {
-      const response = await fetch("http://cleservice/api/users/reset-password", {
+      const response = await fetch("https://cl-back.onrender.com/users/reset-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

@@ -9,9 +9,9 @@ const rootElement = document.getElementById('root');
 const root = ReactDOM.createRoot(rootElement);
 
 root.render(
-  <BrowserRouter>
-    <ThemeProvider theme={theme}>
+  <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+  <ThemeProvider theme={theme}>
       <App />
     </ThemeProvider>
-  </BrowserRouter>
+</BrowserRouter>
 );

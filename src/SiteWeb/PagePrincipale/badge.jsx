@@ -1,171 +1,218 @@
-import React, { useContext, useState } from 'react';
-import { Box, Typography, Container, Button, Snackbar, Alert } from '@mui/material';
-import back from "./backp.png";
-import badgeImage from "./badges.jpg";
-import { CartContext } from '../context/CartContext.jsx';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import {
+  Box,
+  Typography,
+  Container,
+  Card,
+  CardMedia,
+  CardContent,
+  Button,
+  Snackbar,
+  Alert,
+} from '@mui/material';
+import { Helmet } from 'react-helmet';
+import badgeImage from './badge.jpg';
+import PhoneNumber from './PhoneNumber';
 
 const Badgeuu = () => {
-  // Accéder au contexte du panier
-  const { addToCart, isLoggedIn, userId } = useContext(CartContext);
-
-  // États pour les notifications
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarSeverity, setSnackbarSeverity] = useState('success');
+  const navigate = useNavigate();
 
-  const handleAddToCart = async () => {
-    if (!isLoggedIn || !userId) {
-      setSnackbarMessage('Veuillez vous connecter pour ajouter des articles au panier.');
-      setSnackbarSeverity('error');
-      setSnackbarOpen(true);
-      return;
-    }
-
-    const addToPanierDto = {
-      utilisateur_id: userId,
-      nom_article: 'Badge Vigik',
-      type_article: 'normal',
-    };
-
-    try {
-      const token = localStorage.getItem('token');
-      const response = await fetch('http://cleservice/api/panier/ajouter', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify(addToPanierDto),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Erreur lors de l\'ajout au panier.');
-      }
-
-      const result = await response.json();
-      addToCart({ id: result.id, nom_article: 'Badge Vigik', quantite: 1 });
-
-      setSnackbarMessage('Article ajouté au panier avec succès.');
-      setSnackbarSeverity('success');
-      setSnackbarOpen(true);
-    } catch (err) {
-      console.error('Erreur lors de l\'ajout au panier:', err.message);
-      setSnackbarMessage(`Erreur: ${err.message}`);
-      setSnackbarSeverity('error');
-      setSnackbarOpen(true);
-    }
+  // Redirection vers la page de commande pour le Badge Vigik
+  const handleOrderNow = () => {
+    navigate(
+      `/commander/Vigik/cle/BadgeVigik/${encodeURIComponent('Badge Vigik')}?mode=postal`
+    );
   };
 
-  const handleOrderNow = () => {
-    if (!isLoggedIn || !userId) {
-      setSnackbarMessage('Veuillez vous connecter pour commander cet article.');
-      setSnackbarSeverity('error');
-      setSnackbarOpen(true);
-      return;
-    }
-
-    setSnackbarMessage('Commande immédiate pour le Badge Vigik effectuée avec succès !');
-    setSnackbarSeverity('success');
-    setSnackbarOpen(true);
+  // Redirection vers la page produit (mise à jour effectuée)
+  const handleViewProduct = () => {
+    navigate(`/produit/Vigik/${encodeURIComponent('Badge Vigik')}`);
   };
 
   const handleCloseSnackbar = (event, reason) => {
-    if (reason === 'clickaway') {
-      return;
-    }
+    if (reason === 'clickaway') return;
     setSnackbarOpen(false);
   };
 
+  // Styles
+  const styles = {
+    header: {
+      backgroundColor: '#01591f',
+      height: { xs: '100px', md: '120px' },
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    page: {
+      backgroundColor: '#F5F5F5',
+      minHeight: '100vh',
+      paddingBottom: '24px',
+    },
+    explanationContainer: {
+      p: { xs: 2, sm: 3 },
+      backgroundColor: '#fff',
+      borderRadius: 2,
+      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+      textAlign: 'center',
+    },
+    explanationTitle: {
+      mb: 2,
+      fontFamily: 'Montserrat, sans-serif',
+      fontWeight: 700,
+      fontSize: { xs: '1.5rem', sm: '2rem' },
+    },
+    explanationText: {
+      mb: 1,
+      fontFamily: 'Roboto, sans-serif',
+      fontSize: '1rem',
+    },
+    card: {
+      borderRadius: 3,
+      boxShadow: '0px 6px 20px rgba(0, 0, 0, 0.15)',
+      overflow: 'hidden',
+    },
+    cardMedia: {
+      height: 220,
+      objectFit: 'cover',
+    },
+    cardContent: {
+      p: 3,
+      textAlign: 'center',
+      fontFamily: 'Montserrat, sans-serif',
+    },
+    productName: {
+      fontSize: '1.5rem',
+      fontWeight: 700,
+      mb: 1,
+      color: '#333',
+    },
+    priceBadge: {
+      display: 'inline-block',
+      padding: '8px 16px',
+      borderRadius: '20px',
+      backgroundColor: '#f0f0f0',
+      color: '#555',
+      fontSize: '1rem',
+      mb: 2,
+    },
+    buttonContainer: {
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      gap: 2,
+      mt: 2,
+    },
+    buttonPrimary: {
+      borderRadius: '50px',
+      px: 4,
+      py: 1.5,
+      backgroundColor: '#1B5E20',
+      textTransform: 'none',
+      fontWeight: 600,
+      '&:hover': {
+        backgroundColor: '#155724',
+      },
+    },
+    buttonSecondary: {
+      borderRadius: '50px',
+      px: 4,
+      py: 1.5,
+      color: '#1B5E20',
+      borderColor: '#1B5E20',
+      textTransform: 'none',
+      fontWeight: 600,
+      '&:hover': {
+        backgroundColor: '#1B5E20',
+        color: '#fff',
+      },
+    },
+  };
+
   return (
-    <Box sx={{ backgroundColor: '#F2F2F2', minHeight: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-      {/* Header */}
-      <Box 
-        style={{
-          backgroundImage: `url(${back})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat',
-          color: '#F2F2F2',
-          padding: '64px 0',
-        }}
-      >
-        <Container>
-          <Typography variant="h3" align="center" gutterBottom sx={{ fontFamily: 'Montserrat, sans-serif', fontWeight: '700' }}>
-            Badge Vigik
-          </Typography>
-        </Container>
-      </Box>
-
-      {/* Content Section */}
-      <Container sx={{ py: 4, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-        <Box 
-          sx={{
-            backgroundColor: '#FFFFFF',
-            padding: 4,
-            borderRadius: 1,
-            boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
-            textAlign: 'center',
-            maxWidth: '500px'
-          }}
-        >
-          <img 
-            src={badgeImage} 
-            alt="Badge Vigik" 
-            style={{ width: '100%', borderRadius: '8px' }} 
-          />
-          <Typography variant="h6" sx={{ mt: 2, fontFamily: 'Roboto, sans-serif', fontWeight: '500' }}>
-            Badge Vigik
-          </Typography>
-          <Typography variant="body1" sx={{ color: '#333', mt: 1 }}>
-            Prix : 30€ unitaire
-          </Typography>
-          <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, mt: 2 }}>
-            <Button
-              variant="contained"
-              sx={{
-                backgroundColor: '#025920',
-                '&:hover': {
-                  backgroundColor: '#014d16',
-                },
-                height: '36px',
-              }}
-              onClick={handleAddToCart}
-            >
-              Ajouter au panier
-            </Button>
-
-            <Button
-              variant="contained"
-              sx={{
-                backgroundColor: '#025920',
-                '&:hover': {
-                  backgroundColor: '#014d16',
-                },
-                height: '36px',
-              }}
-              onClick={handleOrderNow}
-            >
-              Commander
-            </Button>
-          </Box>
+    <>
+      <Helmet>
+        <title>Commande Badge Vigik - Reproduction de Badge Sécurisé à 30€ | NomDuSite</title>
+        <meta
+          name="description"
+          content="Commandez votre Badge Vigik, indispensable pour accéder à vos espaces sécurisés. Reproduction de badge de qualité à 30€ l'unité, avec livraison rapide par voie postale."
+        />
+      </Helmet>
+      <Box sx={styles.page}>
+        {/* Bandeau supérieur */}
+        <Box sx={styles.header}>
+          <PhoneNumber />
         </Box>
-      </Container>
 
-     
+        {/* Conteneur regroupant les deux sections côte à côte */}
+        <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: { xs: 'column', md: 'row' },
+              gap: 4,
+              alignItems: 'stretch',
+            }}
+          >
+            {/* Section d'explication */}
+            <Box sx={{ flex: 1 }}>
+              <Box sx={styles.explanationContainer}>
+                <Typography component="h1" sx={styles.explanationTitle}>
+                  Comment commander votre Badge Vigik ?
+                </Typography>
+                <Typography sx={styles.explanationText}>
+                  Le Badge Vigik est indispensable pour accéder à vos espaces sécurisés.
+                </Typography>
+                <Typography sx={styles.explanationText}>
+                  Cliquez sur "Commander" pour passer votre commande dès maintenant.
+                </Typography>
+              </Box>
+            </Box>
 
-      {/* Snackbar */}
-      <Snackbar
-        open={snackbarOpen}
-        autoHideDuration={6000}
-        onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-      >
-        <Alert onClose={handleCloseSnackbar} severity={snackbarSeverity} sx={{ width: '100%' }}>
-          {snackbarMessage}
-        </Alert>
-      </Snackbar>
-    </Box>
+            {/* Section produit */}
+            <Box sx={{ flex: 1 }}>
+              <Card sx={styles.card}>
+                <CardMedia
+                  component="img"
+                  image={badgeImage}
+                  alt="Badge Vigik - Reproduction de badge pour accès sécurisé"
+                  sx={styles.cardMedia}
+                />
+                <CardContent sx={styles.cardContent}>
+                  <Typography sx={styles.productName}>Badge Vigik</Typography>
+                  <Box sx={styles.priceBadge}>
+                    Prix : <strong>30€</strong> unitaire
+                  </Box>
+                  <Box sx={styles.buttonContainer}>
+                    <Button variant="contained" sx={styles.buttonPrimary} onClick={handleOrderNow}>
+                      Commander
+                    </Button>
+                    <Button variant="outlined" sx={styles.buttonSecondary} onClick={handleViewProduct}>
+                      Voir le produit
+                    </Button>
+                  </Box>
+                </CardContent>
+              </Card>
+            </Box>
+          </Box>
+        </Container>
+
+        {/* Snackbar de notifications */}
+        <Snackbar
+          open={snackbarOpen}
+          autoHideDuration={6000}
+          onClose={handleCloseSnackbar}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        >
+          <Alert onClose={handleCloseSnackbar} severity={snackbarSeverity} sx={{ width: '100%' }}>
+            {snackbarMessage}
+          </Alert>
+        </Snackbar>
+      </Box>
+    </>
   );
 };
 

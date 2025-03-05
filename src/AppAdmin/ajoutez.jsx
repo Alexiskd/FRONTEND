@@ -1,608 +1,708 @@
-import React, { useState, useEffect } from 'react';
-import styled, { createGlobalStyle } from 'styled-components';
-import axios from 'axios';
+import React, { useState, useEffect, useCallback } from 'react';
+import {
+  Container,
+  Box,
+  Typography,
+  TextField,
+  Button,
+  Checkbox,
+  FormControlLabel,
+  Card,
+  CardMedia,
+  CardContent,
+  CardActions,
+  Grid,
+  Alert,
+  CircularProgress,
+} from '@mui/material';
 
-axios.defaults.baseURL = 'http://localhost:3000';
-axios.defaults.headers.common['Content-Type'] = 'application/json';
+const primaryGreen = '#2E7D32';
+const hoverGreen = '#1B5E20';
+const lightGreen = '#A5D6A7';
 
-// Global Styles (si nécessaire)
-const GlobalStyle = createGlobalStyle`
-  body {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: 'Arial', sans-serif;
-    background: linear-gradient(to bottom right, #f9fafb, #e5e7eb);
-  }
-`;
+const BASE_URL = 'https://cl-back.onrender.com';
 
-// Styled Components
-const Container = styled.div`
-  min-height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 2rem;
-  background: linear-gradient(to bottom right, #f9fafb, #e5e7eb);
-`;
+function useDebounce(value, delay) {
+  const [debouncedValue, setDebouncedValue] = useState(value);
+  useEffect(() => {
+    const handler = setTimeout(() => setDebouncedValue(value), delay);
+    return () => clearTimeout(handler);
+  }, [value, delay]);
+  return debouncedValue;
+}
 
-const Card = styled.div`
-  background: #ffffff;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-  border-radius: 1rem;
-  width: 100%;
-  max-width: 800px;
-  padding: 2rem;
-`;
-
-const Title = styled.h1`
-  font-size: 2rem;
-  font-weight: 800;
-  color: #1f2937;
-  text-align: center;
-  margin-bottom: 1.5rem;
-`;
-
-const Form = styled.form`
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-`;
-
-const Grid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1.5rem;
-`;
-
-const FormGroup = styled.div`
-  display: flex;
-  flex-direction: column;
-`;
-
-const Label = styled.label`
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: #4b5563;
-  margin-bottom: 0.5rem;
-`;
-
-const Input = styled.input`
-  padding: 0.75rem 1rem;
-  border: 1px solid #d1d5db;
-  border-radius: 0.5rem;
-  font-size: 1rem;
-  transition: border-color 0.3s;
-  &:focus {
-    outline: none;
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
-  }
-`;
-
-const CheckboxContainer = styled.div`
-  display: flex;
-  align-items: center;
-`;
-
-const Checkbox = styled.input`
-  margin-right: 0.5rem;
-  width: 1.25rem;
-  height: 1.25rem;
-  accent-color: #3b82f6;
-`;
-
-const SubmitButton = styled.button`
-  padding: 0.75rem 1rem;
-  background-color: #3b82f6;
-  color: #ffffff;
-  font-size: 1rem;
-  font-weight: 600;
-  border: none;
-  border-radius: 0.5rem;
-  cursor: pointer;
-  transition: background-color 0.3s;
-  &:hover {
-    background-color: #2563eb;
-  }
-  &:disabled {
-    background-color: #93c5fd;
-    cursor: not-allowed;
-  }
-`;
-
-const ErrorMessage = styled.div`
-  color: #ef4444;
-  text-align: center;
-  margin-top: 1rem;
-`;
-
-const TableContainer = styled.div`
-  overflow-x: auto;
-  margin-top: 2rem;
-`;
-
-const Table = styled.table`
-  width: 100%;
-  border-collapse: collapse;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  border-radius: 0.5rem;
-  overflow: hidden;
-`;
-
-const Thead = styled.thead`
-  background-color: #e5e7eb;
-`;
-
-const Th = styled.th`
-  padding: 1rem;
-  text-align: left;
-  font-size: 0.875rem;
-  color: #4b5563;
-`;
-
-const Tbody = styled.tbody`
-  background-color: #ffffff;
-`;
-
-const Tr = styled.tr`
-  background-color: ${({ index }) => (index % 2 === 0 ? '#f9fafb' : '#ffffff')};
-`;
-
-const Td = styled.td`
-  padding: 1rem;
-  font-size: 0.875rem;
-  color: #374151;
-  text-align: ${({ center }) => (center ? 'center' : 'left')};
-`;
-
-// Nouveau Styled Component pour le bouton Supprimer
-const DeleteButton = styled.button`
-  padding: 0.5rem 1rem;
-  background-color: #ef4444;
-  color: #ffffff;
-  font-size: 0.875rem;
-  font-weight: 600;
-  border: none;
-  border-radius: 0.25rem;
-  cursor: pointer;
-  margin-left: 0.5rem;
-  transition: background-color 0.3s;
-  &:hover {
-    background-color: #dc2626;
-  }
-  &:disabled {
-    background-color: #fca5a5;
-    cursor: not-allowed;
-  }
-`;
-
-// Styled Components pour l'Édition
-const EditInput = styled.input`
-  padding: 0.5rem;
-  border: 1px solid #d1d5db;
-  border-radius: 0.25rem;
-  font-size: 0.875rem;
-  width: 100%;
-  box-sizing: border-box;
-  &:focus {
-    outline: none;
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.5);
-  }
-`;
-
-const ValidateButton = styled.button`
-  padding: 0.5rem 1rem;
-  background-color: #10b981;
-  color: #ffffff;
-  font-size: 0.875rem;
-  font-weight: 600;
-  border: none;
-  border-radius: 0.25rem;
-  cursor: pointer;
-  transition: background-color 0.3s;
-  &:hover {
-    background-color: #059669;
-  }
-  &:disabled {
-    background-color: #a7f3d0;
-    cursor: not-allowed;
-  }
-`;
-
-const CancelButton = styled.button`
-  padding: 0.5rem 1rem;
-  background-color: #ef4444;
-  color: #ffffff;
-  font-size: 0.875rem;
-  font-weight: 600;
-  border: none;
-  border-radius: 0.25rem;
-  cursor: pointer;
-  margin-left: 0.5rem;
-  transition: background-color 0.3s;
-  &:hover {
-    background-color: #dc2626;
-  }
-  &:disabled {
-    background-color: #fca5a5;
-    cursor: not-allowed;
-  }
-`;
-
-// Ajout du Styled Component NoProducts
-const NoProducts = styled.div`
-  color: #6b7280;
-  text-align: center;
-  margin-top: 1rem;
-`;
+const compressImage = (file, maxWidth = 800, maxHeight = 800, quality = 0.7) => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (e) => {
+      const image = new Image();
+      image.src = e.target.result;
+      image.onload = () => {
+        let { width, height } = image;
+        if (width > maxWidth || height > maxHeight) {
+          if (width > height) {
+            height = Math.round((height * maxWidth) / width);
+            width = maxWidth;
+          } else {
+            width = Math.round((width * maxHeight) / height);
+            height = maxHeight;
+          }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(image, 0, 0, width, height);
+        canvas.toBlob(
+          (blob) => {
+            const compressedReader = new FileReader();
+            compressedReader.readAsDataURL(blob);
+            compressedReader.onloadend = () => {
+              resolve(compressedReader.result);
+            };
+          },
+          file.type,
+          quality,
+        );
+      };
+      image.onerror = (err) => reject(err);
+    };
+    reader.onerror = (err) => reject(err);
+  });
+};
 
 const Ajoutez = () => {
   const [form, setForm] = useState({
     cleAvecCartePropriete: false,
     prix: '',
+    prixSansCartePropriete: '',
     nom: '',
     marque: '',
-    imageUrl: '',
+    imageDataUrl: '',
+    referenceEbauche: '',
+    typeReproduction: 'copie',
+    descriptionProduit: '',
+    descriptionNumero: '',
+    estCleAPasse: false,
+    prixCleAPasse: '',
+    besoinPhoto: false,
+    besoinNumeroCle: false,
+    besoinNumeroCarte: false,
   });
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
+  const [totalKeys, setTotalKeys] = useState(null);
+  const [displayCount, setDisplayCount] = useState(10);
+  const [editingProduct, setEditingProduct] = useState(null);
 
-  // États pour l'édition
-  const [editProductId, setEditProductId] = useState(null);
-  const [editForm, setEditForm] = useState({
-    prix: '',
-    nom: '',
-    marque: '',
-    cleAvecCartePropriete: false,
-  });
-  const [editLoading, setEditLoading] = useState(false);
-  const [editError, setEditError] = useState(null);
-
-  // États pour la suppression
-  const [deleteLoading, setDeleteLoading] = useState(false);
-  const [deleteError, setDeleteError] = useState(null);
-
-  const handleInputChange = (e) => {
+  const handleInputChange = useCallback((e) => {
     const { name, value, type, checked } = e.target;
     setForm((prev) => ({
       ...prev,
       [name]: type === 'checkbox' ? checked : value,
     }));
+  }, []);
+
+  const handleSearchChange = (e) => {
+    setSearchQuery(e.target.value);
+  };
+
+  const handleImageUpload = useCallback(async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    try {
+      let dataUrl;
+      if (file.size > 1024 * 1024) {
+        dataUrl = await compressImage(file);
+      } else {
+        dataUrl = await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = () => reject(new Error("Erreur de lecture de fichier"));
+          reader.readAsDataURL(file);
+        });
+      }
+      setForm((prev) => ({ ...prev, imageDataUrl: dataUrl }));
+    } catch (err) {
+      console.error("Erreur lors de la compression de l'image:", err);
+      setError("Erreur lors de la compression de l'image");
+    }
+  }, []);
+
+  const handleEdit = (prod) => {
+    setEditingProduct(prod);
+    setForm({
+      cleAvecCartePropriete: prod.cleAvecCartePropriete,
+      prix: prod.prix.toString(),
+      prixSansCartePropriete: prod.prixSansCartePropriete ? prod.prixSansCartePropriete.toString() : '',
+      nom: prod.nom,
+      marque: prod.marque,
+      imageDataUrl: prod.imageUrl,
+      referenceEbauche: prod.referenceEbauche || '',
+      typeReproduction: prod.typeReproduction,
+      descriptionProduit: prod.descriptionProduit || '',
+      descriptionNumero: prod.descriptionNumero || '',
+      estCleAPasse: prod.estCleAPasse,
+      prixCleAPasse: prod.prixCleAPasse ? prod.prixCleAPasse.toString() : '',
+      besoinPhoto: prod.besoinPhoto || false,
+      besoinNumeroCle: prod.besoinNumeroCle || false,
+      besoinNumeroCarte: prod.besoinNumeroCarte || false,
+    });
+  };
+
+  const resetForm = () => {
+    setForm({
+      cleAvecCartePropriete: false,
+      prix: '',
+      prixSansCartePropriete: '',
+      nom: '',
+      marque: '',
+      imageDataUrl: '',
+      referenceEbauche: '',
+      typeReproduction: 'copie',
+      descriptionProduit: '',
+      descriptionNumero: '',
+      estCleAPasse: false,
+      prixCleAPasse: '',
+      besoinPhoto: false,
+      besoinNumeroCle: false,
+      besoinNumeroCarte: false,
+    });
+    setEditingProduct(null);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
-  
-    console.log("Données soumises :", form); // ✅ Ajout du log
-  
-    if (!form.nom || !form.marque || form.prix === '' || !form.imageUrl) {
-      setError('Veuillez remplir tous les champs et sélectionner une image.');
+    if (!form.nom || !form.marque || form.prix === '' || !form.imageDataUrl) {
+      setError('Veuillez remplir tous les champs obligatoires et sélectionner une image.');
       return;
     }
-  
-  
+    const dataToSend = {
+      nom: form.nom,
+      marque: form.marque,
+      prix: Number(form.prix),
+      cleAvecCartePropriete: form.cleAvecCartePropriete,
+      ...(form.prixSansCartePropriete !== '' && { prixSansCartePropriete: Number(form.prixSansCartePropriete) }),
+      imageUrl: form.imageDataUrl,
+      referenceEbauche: form.referenceEbauche.trim() !== '' ? form.referenceEbauche : null,
+      typeReproduction: form.typeReproduction,
+      descriptionProduit: form.descriptionProduit,
+      descriptionNumero: form.descriptionNumero,
+      estCleAPasse: form.estCleAPasse,
+      ...(form.estCleAPasse && form.prixCleAPasse !== '' && { prixCleAPasse: Number(form.prixCleAPasse) }),
+      besoinPhoto: form.besoinPhoto,
+      besoinNumeroCle: form.besoinNumeroCle,
+      besoinNumeroCarte: form.besoinNumeroCarte,
+    };
+
     try {
       setLoading(true);
-      const completeImageUrl = `https://cleservice/api/${form.imageUrl.split('/').pop()}`;
-      const dataToSend = { ...form, prix: Number(form.prix), imageUrl: completeImageUrl };
-  
-      const response = await axios.post('/produit/cles/add', dataToSend);
-      setProducts((prev) => [...prev, response.data]);
-      setForm({ cleAvecCartePropriete: false, prix: '', nom: '', marque: '', imageUrl: '' });
-    } catch (error) {
-      setError("Erreur lors de l'ajout du produit. Vérifiez les données et réessayez.");
-    } finally {
-      setLoading(false);
-    }
-  };
-  
-
-  const fetchProducts = async () => {
-    setLoading(true);
-    try {
-      const response = await axios.get('/produit/cles/all');
-      setProducts(Array.isArray(response.data) ? response.data : []);
-    } catch (error) {
-      setError("Erreur lors de la récupération des produits. Vérifiez le backend.");
+      let response;
+      if (editingProduct) {
+        response = await fetch(`${BASE_URL}/produit/cles/update?nom=${encodeURIComponent(editingProduct.nom)}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(dataToSend),
+        });
+        if (!response.ok) {
+          const errorData = await response.json();
+          const errorMessage = errorData.message || errorData.error || `Erreur ${response.status}: Une erreur est survenue lors de la modification.`;
+          setError(errorMessage);
+          return;
+        }
+        const updatedProduct = await response.json();
+        setProducts((prev) =>
+          prev.map((prod) => (prod.nom === editingProduct.nom ? updatedProduct : prod))
+        );
+      } else {
+        response = await fetch(`${BASE_URL}/produit/cles/add`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(dataToSend),
+        });
+        if (!response.ok) {
+          const errorData = await response.json();
+          const errorMessage = errorData.message || errorData.error || `Erreur ${response.status}: Une erreur est survenue lors de l'ajout.`;
+          setError(errorMessage);
+          return;
+        }
+        const responseData = await response.json();
+        setProducts((prev) => {
+          // On ajoute la nouvelle clé seulement si elle n'existe pas déjà
+          if (!prev.some(prod => prod.id === responseData.id)) {
+            const newProducts = [...prev, responseData];
+            // Tri décroissant pour afficher la dernière clé en premier
+            newProducts.sort((a, b) => b.id - a.id);
+            return newProducts;
+          }
+          return prev;
+        });
+        setTotalKeys((prev) => (prev !== null ? prev + 1 : prev));
+      }
+      resetForm();
+    } catch (err) {
+      setError(`Erreur : ${err.message}`);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchProducts();
+    const fetchCount = async () => {
+      try {
+        const response = await fetch(`${BASE_URL}/produit/cles/count`);
+        if (response.ok) {
+          const data = await response.json();
+          setTotalKeys(data.count);
+        } else {
+          console.error("Erreur lors de la récupération du nombre de clés :", response.status);
+        }
+      } catch (err) {
+        console.error("Erreur dans fetchCount :", err);
+      }
+    };
+    fetchCount();
   }, []);
 
-  // Gérer les changements dans le formulaire d'édition
-  const handleEditInputChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setEditForm((prev) => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value,
-    }));
-  };
-
-  // Activer le mode édition pour un produit
-  const handleEditClick = (product) => {
-    setEditProductId(product.nom);
-    setEditForm({
-      prix: product.prix,
-      nom: product.nom,
-      marque: product.marque,
-      cleAvecCartePropriete: product.cleAvecCartePropriete,
-    });
-    setEditError(null);
-  };
-
-  // Annuler l'édition
-  const handleCancelEdit = () => {
-    setEditProductId(null);
-    setEditForm({
-      prix: '',
-      nom: '',
-      marque: '',
-      cleAvecCartePropriete: false,
-    });
-    setEditError(null);
-  };
-
-  // Valider et soumettre les modifications
-  const handleValidateEdit = async (productName) => {
-    setEditError(null);
-    try {
-      setEditLoading(true);
-      // Vérifiez ici l'URL envoyée
-      const response = await axios.put(`/produit/cles/update?nom=${encodeURIComponent(productName)}`, editForm);
-      setProducts((prev) =>
-        prev.map((prod) => (prod.nom === productName ? response.data : prod))
-      );
-      setEditProductId(null);
-    } catch (error) {
-      setEditError("Erreur lors de la mise à jour du produit. Vérifiez les données et réessayez.");
-    } finally {
-      setEditLoading(false);
+  useEffect(() => {
+    if (totalKeys !== null) {
+      for (let i = 0; i < totalKeys; i++) {
+        fetch(`${BASE_URL}/produit/cles/index/${i}`)
+          .then((res) => (res.ok ? res.json() : null))
+          .then((key) => {
+            if (key) {
+              setProducts((prev) => {
+                // Ajoute la clé seulement si elle n'existe pas déjà (vérification par id)
+                if (!prev.some(prod => prod.id === key.id)) {
+                  const newProducts = [...prev, key];
+                  // Trie en ordre décroissant pour que la dernière clé apparaisse en premier
+                  newProducts.sort((a, b) => b.id - a.id);
+                  return newProducts;
+                }
+                return prev;
+              });
+            }
+          })
+          .catch((err) =>
+            console.error(`Erreur dans fetchKeyByIndex pour index ${i} :`, err)
+          );
+      }
     }
-  };
+  }, [totalKeys]);
 
-  // Nouvelle fonction pour gérer la suppression
-  const handleDelete = async (productName) => {
-    const confirmDelete = window.confirm(`Êtes-vous sûr de vouloir supprimer le produit "${productName}" ?`);
-    if (!confirmDelete) return;
-
-    setDeleteError(null);
-    try {
-      setDeleteLoading(true);
-      await axios.delete(`/produit/cles/delete?nom=${encodeURIComponent(productName)}`);
-      setProducts((prev) => prev.filter((prod) => prod.nom !== productName));
-    } catch (error) {
-      setDeleteError(`Erreur lors de la suppression du produit "${productName}".`);
-    } finally {
-      setDeleteLoading(false);
-    }
-  };
-
-  const handleImageUpload = async (e) => {
-    const file = e.target.files[0];
-    if (!file) {
-      console.error("Aucun fichier sélectionné");
-      return;
-    }
-  
-    const formData = new FormData();
-    formData.append('image', file);
-  
-    console.log("Envoi du fichier :", file);
-  
-    try {
-      const response = await axios.post('http://cleservice/api/upload', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
-  
-      console.log("Réponse du serveur :", response.data);
-  
-      const imageUrl = `http://cleservice/api${response.data.imageUrl}`;
-      console.log("URL de l'image enregistrée :", imageUrl); // ✅ Vérification
-  
-      setForm((prev) => ({ ...prev, imageUrl }));
-    } catch (error) {
-      console.error("Erreur lors de l'upload :", error.response?.data || error.message);
-      setError("Erreur lors de l'upload de l'image. Vérifiez le serveur.");
-    }
-  };
-  
-  
-  
-  
+  const filteredProducts = products.filter((prod) =>
+    prod.nom.toLowerCase().includes(debouncedSearchQuery.toLowerCase())
+  );
+  const displayedProducts = filteredProducts.slice(0, displayCount);
 
   return (
-    <>
-      <GlobalStyle />
-      <Container>
-        <Card>
-          <Title>Ajouter un Article</Title>
-
-          {/* Formulaire */}
-          <Form onSubmit={handleSubmit}>
-            <Grid>
-              <FormGroup>
-                <Label htmlFor="nom">Nom</Label>
-                <Input
-                  type="text"
-                  id="nom"
-                  name="nom"
-                  value={form.nom}
-                  onChange={handleInputChange}
-                  required
-                />
-              </FormGroup>
-              <FormGroup>
-                <Label htmlFor="marque">Marque</Label>
-                <Input
-                  type="text"
-                  id="marque"
-                  name="marque"
-                  value={form.marque}
-                  onChange={handleInputChange}
-                  required
-                />
-              </FormGroup>
-              <FormGroup>
-                <Label htmlFor="prix">Prix (€)</Label>
-                <Input
-                  type="number"
-                  id="prix"
-                  name="prix"
-                  value={form.prix}
-                  onChange={handleInputChange}
-                  required
-                  min="0"
-                />
-              </FormGroup>
-              <FormGroup>
-              <Label htmlFor="image">Image du produit</Label>
-                <Input type="file" id="image" name="image" accept="image/*" onChange={handleImageUpload} required />
-              </FormGroup>
-              {form.imageUrl && <img src={form.imageUrl} alt="Aperçu" style={{ width: '100%', borderRadius: '0.5rem', marginTop: '1rem' }} />}
-
-
-              <CheckboxContainer>
+    <Container
+      maxWidth={false}
+      disableGutters
+      sx={{ py: { xs: 2, sm: 4 }, px: { xs: 1, sm: 3 } }}
+    >
+      <Typography variant="h4" align="center" gutterBottom sx={{ color: primaryGreen }}>
+        {editingProduct ? "Modifier l'article" : "Ajouter un article"}
+      </Typography>
+      <Box
+        component="form"
+        onSubmit={handleSubmit}
+        noValidate
+        sx={{
+          mb: 4,
+          p: { xs: 2, sm: 3 },
+          border: `1px solid ${lightGreen}`,
+          borderRadius: 2,
+          backgroundColor: '#f1f8e9',
+        }}
+      >
+        <Grid container spacing={2}>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              label="Nom"
+              name="nom"
+              value={form.nom}
+              onChange={handleInputChange}
+              required
+              fullWidth
+              variant="outlined"
+              sx={{ '& .MuiOutlinedInput-root': { borderColor: primaryGreen } }}
+            />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              label="Marque"
+              name="marque"
+              value={form.marque}
+              onChange={handleInputChange}
+              required
+              fullWidth
+              variant="outlined"
+              sx={{ '& .MuiOutlinedInput-root': { borderColor: primaryGreen } }}
+            />
+          </Grid>
+          <Grid item xs={12}>
+            <TextField
+              label="Référence Ébauche"
+              name="referenceEbauche"
+              value={form.referenceEbauche}
+              onChange={handleInputChange}
+              fullWidth
+              variant="outlined"
+              sx={{ '& .MuiOutlinedInput-root': { borderColor: primaryGreen } }}
+            />
+          </Grid>
+          <Grid item xs={12}>
+            <TextField
+              label="Description du produit"
+              name="descriptionProduit"
+              value={form.descriptionProduit}
+              onChange={handleInputChange}
+              fullWidth
+              multiline
+              rows={3}
+              variant="outlined"
+              sx={{ '& .MuiOutlinedInput-root': { borderColor: primaryGreen } }}
+            />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              label="Prix (€)"
+              name="prix"
+              type="number"
+              value={form.prix}
+              onChange={handleInputChange}
+              required
+              fullWidth
+              inputProps={{ min: 0 }}
+              variant="outlined"
+              sx={{ '& .MuiOutlinedInput-root': { borderColor: primaryGreen } }}
+            />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              label="Prix Sans Carte Propriété (€)"
+              name="prixSansCartePropriete"
+              type="number"
+              value={form.prixSansCartePropriete}
+              onChange={handleInputChange}
+              fullWidth
+              inputProps={{ min: 0 }}
+              variant="outlined"
+              sx={{ '& .MuiOutlinedInput-root': { borderColor: primaryGreen } }}
+            />
+          </Grid>
+          <Grid item xs={12} sm={6} sx={{ display: 'flex', alignItems: 'center' }}>
+            <FormControlLabel
+              control={
                 <Checkbox
-                  type="checkbox"
-                  id="cleAvecCartePropriete"
                   name="cleAvecCartePropriete"
                   checked={form.cleAvecCartePropriete}
                   onChange={handleInputChange}
+                  sx={{ color: primaryGreen, '&.Mui-checked': { color: primaryGreen } }}
                 />
-                <Label htmlFor="cleAvecCartePropriete">Clé avec Carte Propriété</Label>
-              </CheckboxContainer>
+              }
+              label="Clé avec carte de propriété"
+            />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              select
+              label="Type de reproduction"
+              name="typeReproduction"
+              value={form.typeReproduction}
+              onChange={handleInputChange}
+              required
+              fullWidth
+              variant="outlined"
+              SelectProps={{ native: true }}
+              sx={{ '& .MuiOutlinedInput-root': { borderColor: primaryGreen } }}
+            >
+              <option value="copie">Copie</option>
+              <option value="numero">Numéro</option>
+              <option value="ia">IA</option>
+            </TextField>
+          </Grid>
+          {form.typeReproduction === 'numero' && (
+            <Grid item xs={12}>
+              <TextField
+                label="Description du numéro"
+                name="descriptionNumero"
+                value={form.descriptionNumero}
+                onChange={handleInputChange}
+                fullWidth
+                variant="outlined"
+                sx={{ '& .MuiOutlinedInput-root': { borderColor: primaryGreen } }}
+              />
             </Grid>
-            <SubmitButton type="submit" disabled={loading}>
-              {loading ? 'Ajout en cours...' : 'Ajouter'}
-            </SubmitButton>
-          </Form>
-
-          {/* Messages d'erreur */}
-          {error && <ErrorMessage>{error}</ErrorMessage>}
-
-          {/* Liste des produits */}
-          <Title as="h2" style={{ fontSize: '1.5rem', marginTop: '2rem' }}>
-            Liste des Produits
-          </Title>
-          {products.length === 0 ? (
-            <NoProducts>Aucun produit trouvé.</NoProducts>
-          ) : (
-            <TableContainer>
-              <Table>
-                <Thead>
-                  <tr>
-                    <Th>Nom</Th>
-                    <Th>Marque</Th>
-                    <Th>Prix</Th>
-                    <Th>Clé avec Carte Propriété</Th>
-                    <Th>Actions</Th>
-                  </tr>
-                </Thead>
-                <Tbody>
-                  {products.map((product, index) => (
-                    <Tr key={product.nom} index={index}>
-                      <Td>
-                        {editProductId === product.nom ? (
-                          <EditInput
-                            type="text"
-                            name="nom"
-                            value={editForm.nom}
-                            onChange={handleEditInputChange}
-                            required
-                          />
-                        ) : (
-                          product.nom
-                        )}
-                      </Td>
-                      <Td>
-                        {editProductId === product.nom ? (
-                          <EditInput
-                            type="text"
-                            name="marque"
-                            value={editForm.marque}
-                            onChange={handleEditInputChange}
-                            required
-                          />
-                        ) : (
-                          product.marque
-                        )}
-                      </Td>
-                      <Td>
-                        {editProductId === product.nom ? (
-                          <EditInput
-                            type="number"
-                            name="prix"
-                            value={editForm.prix}
-                            onChange={handleEditInputChange}
-                            required
-                            min="0"
-                          />
-                        ) : (
-                          `${product.prix}€`
-                        )}
-                      </Td>
-                      <Td>
-                        {editProductId === product.nom ? (
-                          <Checkbox
-                            type="checkbox"
-                            name="cleAvecCartePropriete"
-                            checked={editForm.cleAvecCartePropriete}
-                            onChange={handleEditInputChange}
-                          />
-                        ) : product.cleAvecCartePropriete ? (
-                          'Oui'
-                        ) : (
-                          'Non'
-                        )}
-                      </Td>
-                      <Td>
-                        {editProductId === product.nom ? (
-                          <>
-                            <ValidateButton
-                              onClick={() => handleValidateEdit(product.nom)}
-                              disabled={editLoading}
-                            >
-                              {editLoading ? 'Validation...' : 'Valider'}
-                            </ValidateButton>
-                            <CancelButton onClick={handleCancelEdit} disabled={editLoading}>
-                              Annuler
-                            </CancelButton>
-                          </>
-                        ) : (
-                          <>
-                            <ValidateButton onClick={() => handleEditClick(product)}>
-                              Modifier
-                            </ValidateButton>
-                            <DeleteButton
-                              onClick={() => handleDelete(product.nom)}
-                              disabled={deleteLoading}
-                            >
-                              {deleteLoading ? 'Suppression...' : 'Supprimer'}
-                            </DeleteButton>
-                          </>
-                        )}
-                      </Td>
-                    </Tr>
-                  ))}
-                </Tbody>
-              </Table>
-              {/* Message d'erreur pour l'édition */}
-              {editError && <ErrorMessage>{editError}</ErrorMessage>}
-              {/* Message d'erreur pour la suppression */}
-              {deleteError && <ErrorMessage>{deleteError}</ErrorMessage>}
-            </TableContainer>
           )}
-        </Card>
-      </Container>
-    </>
+          <Grid item xs={12} sm={6} sx={{ display: 'flex', alignItems: 'center' }}>
+            <FormControlLabel
+              control={
+                <Checkbox
+                  name="estCleAPasse"
+                  checked={form.estCleAPasse}
+                  onChange={handleInputChange}
+                  sx={{ color: primaryGreen, '&.Mui-checked': { color: primaryGreen } }}
+                />
+              }
+              label="Clé à passe"
+            />
+          </Grid>
+          {form.estCleAPasse && (
+            <Grid item xs={12} sm={6}>
+              <TextField
+                label="Prix clé à passe (€)"
+                name="prixCleAPasse"
+                type="number"
+                value={form.prixCleAPasse}
+                onChange={handleInputChange}
+                fullWidth
+                inputProps={{ min: 0 }}
+                variant="outlined"
+                sx={{ '& .MuiOutlinedInput-root': { borderColor: primaryGreen } }}
+              />
+            </Grid>
+          )}
+          <Grid item xs={12}>
+            <Typography variant="subtitle1" sx={{ color: primaryGreen, mb: 1 }}>
+              Exigences du produit :
+            </Typography>
+            <FormControlLabel
+              control={
+                <Checkbox
+                  name="besoinPhoto"
+                  checked={form.besoinPhoto}
+                  onChange={handleInputChange}
+                  sx={{ color: primaryGreen, '&.Mui-checked': { color: primaryGreen } }}
+                />
+              }
+              label="Exiger des photos"
+            />
+            <FormControlLabel
+              control={
+                <Checkbox
+                  name="besoinNumeroCle"
+                  checked={form.besoinNumeroCle}
+                  onChange={handleInputChange}
+                  sx={{ color: primaryGreen, '&.Mui-checked': { color: primaryGreen } }}
+                />
+              }
+              label="Exiger un numéro de clé"
+            />
+            <FormControlLabel
+              control={
+                <Checkbox
+                  name="besoinNumeroCarte"
+                  checked={form.besoinNumeroCarte}
+                  onChange={handleInputChange}
+                  sx={{ color: primaryGreen, '&.Mui-checked': { color: primaryGreen } }}
+                />
+              }
+              label="Exiger un numéro de carte"
+            />
+          </Grid>
+          <Grid item xs={12}>
+            <Button
+              variant="contained"
+              component="label"
+              sx={{ bgcolor: primaryGreen, '&:hover': { bgcolor: hoverGreen } }}
+            >
+              Télécharger une image
+              <input type="file" accept="image/*" hidden onChange={handleImageUpload} />
+            </Button>
+            {form.imageDataUrl && (
+              <Box sx={{ mt: 2 }}>
+                <Typography variant="caption" sx={{ color: primaryGreen }}>
+                  Aperçu de l'image :
+                </Typography>
+                <Box
+                  component="img"
+                  src={form.imageDataUrl}
+                  alt="Aperçu"
+                  sx={{
+                    width: { xs: '100%', sm: 120 },
+                    height: 'auto',
+                    mt: 1,
+                    borderRadius: 1,
+                    boxShadow: 1,
+                  }}
+                />
+              </Box>
+            )}
+          </Grid>
+          {error && (
+            <Grid item xs={12}>
+              <Alert severity="error" sx={{ borderColor: primaryGreen, color: primaryGreen }}>
+                {error}
+              </Alert>
+            </Grid>
+          )}
+          <Grid item xs={12}>
+            <Button
+              type="submit"
+              variant="contained"
+              fullWidth
+              disabled={loading}
+              sx={{ bgcolor: primaryGreen, '&:hover': { bgcolor: hoverGreen } }}
+            >
+              {loading
+                ? editingProduct
+                  ? "Modification en cours..."
+                  : "Ajout en cours..."
+                : editingProduct
+                ? "Modifier"
+                : "Ajouter"}
+            </Button>
+          </Grid>
+          {editingProduct && (
+            <Grid item xs={12}>
+              <Button
+                variant="outlined"
+                fullWidth
+                onClick={resetForm}
+                sx={{
+                  borderColor: primaryGreen,
+                  color: primaryGreen,
+                  '&:hover': { borderColor: hoverGreen, color: hoverGreen },
+                  mt: 1,
+                }}
+              >
+                Annuler
+              </Button>
+            </Grid>
+          )}
+        </Grid>
+      </Box>
+
+      <Typography variant="h5" gutterBottom sx={{ color: primaryGreen }}>
+        Liste des Produits
+      </Typography>
+      <Box sx={{ mb: 3, mt: 2 }}>
+        <TextField
+          label="Rechercher une clé"
+          value={searchQuery}
+          onChange={handleSearchChange}
+          fullWidth
+          variant="outlined"
+          sx={{ '& .MuiOutlinedInput-root': { borderColor: primaryGreen } }}
+        />
+      </Box>
+      <Grid container spacing={2}>
+        {displayedProducts.map((prod) => (
+          <Grid item xs={12} sm={6} md={4} key={prod.id}>
+            <Card sx={{ borderRadius: 2, boxShadow: 3 }}>
+              {prod.imageUrl && (
+                <CardMedia
+                  component="img"
+                  image={prod.imageUrl}
+                  alt={prod.nom}
+                  sx={{ height: 180, objectFit: 'cover' }}
+                />
+              )}
+              <CardContent>
+                <Typography variant="h6" gutterBottom sx={{ color: primaryGreen }}>
+                  {prod.nom} (ID: {prod.id})
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Marque : {prod.marque}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Prix : {prod.prix} €
+                </Typography>
+                {prod.prixSansCartePropriete > 0 && (
+                  <Typography variant="body2" color="text.secondary">
+                    Prix sans carte propriété : {prod.prixSansCartePropriete} €
+                  </Typography>
+                )}
+                <Typography variant="body2" color="text.secondary">
+                  Clé avec carte propriété : {prod.cleAvecCartePropriete ? "Oui" : "Non"}
+                </Typography>
+                {prod.referenceEbauche && (
+                  <Typography variant="body2" color="text.secondary">
+                    Référence ébauche : {prod.referenceEbauche}
+                  </Typography>
+                )}
+                <Typography variant="body2" color="text.secondary">
+                  Type de reproduction : {prod.typeReproduction}
+                </Typography>
+                {prod.typeReproduction === 'numero' && prod.descriptionNumero && (
+                  <Typography variant="body2" color="text.secondary">
+                    Description numéro : {prod.descriptionNumero}
+                  </Typography>
+                )}
+                {prod.descriptionProduit && (
+                  <Typography variant="body2" color="text.secondary">
+                    Description produit : {prod.descriptionProduit}
+                  </Typography>
+                )}
+                <Typography variant="body2" color="text.secondary">
+                  Clé à passe : {prod.estCleAPasse ? "Oui" : "Non"}
+                </Typography>
+                {prod.estCleAPasse && prod.prixCleAPasse && (
+                  <Typography variant="body2" color="text.secondary">
+                    Prix clé à passe : {prod.prixCleAPasse} €
+                  </Typography>
+                )}
+              </CardContent>
+              <CardActions>
+                <Button
+                  onClick={() => handleEdit(prod)}
+                  variant="outlined"
+                  sx={{
+                    borderColor: primaryGreen,
+                    color: primaryGreen,
+                    '&:hover': { borderColor: hoverGreen, color: hoverGreen },
+                  }}
+                >
+                  Modifier
+                </Button>
+                <Button
+                  onClick={() => {
+                    if (window.confirm(`Voulez-vous vraiment supprimer la clé "${prod.nom}" ?`)) {
+                      fetch(`${BASE_URL}/produit/cles/delete?nom=${encodeURIComponent(prod.nom)}`, { method: 'DELETE' })
+                        .then((res) => {
+                          if (res.ok) {
+                            setProducts((prev) => prev.filter((p) => p.nom !== prod.nom));
+                          } else {
+                            console.error('Erreur lors de la suppression, status:', res.status);
+                          }
+                        })
+                        .catch((err) => console.error("Erreur lors de la suppression :", err));
+                    }
+                  }}
+                  variant="outlined"
+                  sx={{
+                    borderColor: primaryGreen,
+                    color: primaryGreen,
+                    '&:hover': { borderColor: hoverGreen, color: hoverGreen },
+                  }}
+                >
+                  Supprimer
+                </Button>
+              </CardActions>
+            </Card>
+          </Grid>
+        ))}
+      </Grid>
+      {displayCount < filteredProducts.length && (
+        <Box sx={{ mt: 2, display: 'flex', justifyContent: 'center' }}>
+          <Button
+            variant="contained"
+            onClick={() => setDisplayCount(displayCount + 10)}
+            sx={{ bgcolor: primaryGreen, '&:hover': { bgcolor: hoverGreen } }}
+          >
+            Afficher 10 produits suivants
+          </Button>
+        </Box>
+      )}
+      {loading && <CircularProgress sx={{ mt: 2 }} />}
+    </Container>
   );
 };
 

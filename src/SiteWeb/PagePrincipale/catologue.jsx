@@ -1,186 +1,309 @@
-import React, { useState, useEffect } from 'react';
-import { Box, Typography, Container, Grid, TextField, Fab } from '@mui/material';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
+import { Helmet } from 'react-helmet';
+import {
+  Box,
+  Typography,
+  Container,
+  Grid,
+  TextField,
+  Fab,
+  Card,
+  CardContent,
+  Slide,
+  IconButton,
+  Skeleton,
+} from '@mui/material';
 import { Link } from 'react-router-dom';
 import InfoIcon from '@mui/icons-material/Info';
-import back from "./backp.png";
-import styled from 'styled-components';
-const Catalogue = () => {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filteredBrands, setFilteredBrands] = useState([
-    "ABUS", "ANKER", "BRICARD", "CAVERS", "CAVITH", "CITY", "CLE-A-GORGES", "CLE-MAGNETIQUE", "CODEM", "CR", "DENY",
-    "DMC", "DOM", "ERREBI", "EURO-LOCKS", "FICHET", "FONTAINE", "FTH", "GEBA", "HERACLES", "HK-RR", "ISEO", "IZIS",
-    "JMA", "JPM", "KABA", "KESO", "LAPERCHE", "LOTUS", "MEDECO", "MERONI", "METALUX", "MOTTURA", "MUEL", "MUL-T-LOCK",
-    "PICARD", "POLLUX", "RADIAL", "REELAX", "RONIS", "SILCA", "TESA", "VACHETTE", "VAK", "VIGISTAR", "YALE", "YARDENI"
-  ]);
-  const [showInfo, setShowInfo] = useState(false);
+import CloseIcon from '@mui/icons-material/Close';
+import { preloadBrandsData } from '../brandsApi';
+import PhoneNumber from './PhoneNumber';
 
+// Hook personnalisé pour précharger une image
+function useImagePreloader(src) {
+  const [loaded, setLoaded] = useState(false);
   useEffect(() => {
-    setShowInfo(true);
-    const timer = setTimeout(() => {
-      setShowInfo(false);
-    }, 30000);
-    
-    return () => clearTimeout(timer);
-  }, []);
+    if (!src) return;
+    const img = new Image();
+    img.src = src;
+    img.onload = () => setLoaded(true);
+  }, [src]);
+  return loaded;
+}
 
-  const handleSearchChange = (event) => {
-    const value = event.target.value.toLowerCase();
-    setSearchTerm(value);
+const BrandCard = React.memo(({ brand }) => {
+  // Utiliser brand.nom pour récupérer le nom et préparer le logo
+  const logoSrc = brand.logo ? `data:image/*;base64,${brand.logo}` : null;
+  const imgLoaded = useImagePreloader(logoSrc);
 
-    const filtered = brands.filter((brand) =>
-      brand.toLowerCase().includes(value)
-    );
-    setFilteredBrands(filtered);
-  };
-
-  const brands = [
-    "ABUS", "ANKER", "BRICARD", "CAVERS", "CAVITH", "CITY", "CLE-A-GORGES", "CLE-MAGNETIQUE", "CODEM", "CR", "DENY",
-    "DMC", "DOM", "ERREBI", "EURO-LOCKS", "FICHET", "FONTAINE", "FTH", "GEBA", "HERACLES", "HK-RR", "ISEO", "IZIS",
-    "JMA", "JPM", "KABA", "KESO", "LAPERCHE", "LOTUS", "MEDECO", "MERONI", "METALUX", "MOTTURA", "MUEL", "MUL-T-LOCK",
-    "PICARD", "POLLUX", "RADIAL", "REELAX", "RONIS", "SILCA", "TESA", "VACHETTE", "VAK", "VIGISTAR", "YALE", "YARDENI"
-  ];
+  // Génération de l'URL de redirection au format demandé :
+  // "/<nom-marque-en-minuscule>_1_reproduction_cle.html"
+  const brandUrl = `/${(brand.nom || '')
+    .toLowerCase()
+    .replace(/\s+/g, '-')}_1_reproduction_cle.html`;
 
   return (
-    <Box sx={{ backgroundColor: '#F2F2F2', minHeight: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-      {/* Catalogue Hero Section */}
-      <Box
-        style={{
-          backgroundImage: `url(${back})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat',
-          color: '#F2F2F2',
-          padding: '64px 0',
+    <Link to={brandUrl} style={{ textDecoration: 'none' }}>
+      <Card
+        sx={{
+          borderRadius: 2,
+          boxShadow: '0px 2px 8px rgba(0,0,0,0.1)',
+          p: 1,
+          transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+          '&:hover': {
+            transform: 'translateY(-4px)',
+            boxShadow: '0px 4px 12px rgba(0,0,0,0.15)',
+          },
         }}
       >
-        <Container>
-          <Typography variant="h3" align="center" gutterBottom sx={{ fontFamily: 'Roboto, sans-serif', fontWeight: '700' }}>
-            Catalogue des Marques de Clés
+        <CardContent sx={{ display: 'flex', alignItems: 'center', p: 1 }}>
+          <Box
+            sx={{
+              width: { xs: '2.5rem', sm: '3rem' },
+              height: { xs: '2.5rem', sm: '3rem' },
+              position: 'relative',
+            }}
+          >
+            {logoSrc ? (
+              <>
+                {!imgLoaded && (
+                  <Skeleton
+                    variant="circular"
+                    width="100%"
+                    height="100%"
+                    sx={{ position: 'absolute', top: 0, left: 0 }}
+                  />
+                )}
+                <Box
+                  component="img"
+                  src={logoSrc}
+                  alt={brand.nom}
+                  sx={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'contain',
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    display: imgLoaded ? 'block' : 'none',
+                  }}
+                />
+              </>
+            ) : (
+              <Box
+                sx={{
+                  width: '100%',
+                  height: '100%',
+                  backgroundColor: '#ccc',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '0.7rem',
+                  color: '#666',
+                }}
+              >
+                Pas de logo
+              </Box>
+            )}
+          </Box>
+          {/* Affichage du nom de la marque en noir */}
+          <Typography
+            variant="body2"
+            sx={{
+              fontSize: { xs: '0.9rem', md: '1.3rem' },
+              ml: 2,
+              color: '#000',
+            }}
+          >
+            {brand.nom}
+          </Typography>
+        </CardContent>
+      </Card>
+    </Link>
+  );
+});
+
+const Catalogue = () => {
+  const [brands, setBrands] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [showInfo, setShowInfo] = useState(false);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
+  const handleSearchChange = useCallback((e) => {
+    setSearchTerm(e.target.value);
+  }, []);
+
+  // Filtrage des marques en utilisant brand.nom
+  const filteredBrands = useMemo(() => {
+    return brands.filter((brand) =>
+      (brand.nom || '')
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase())
+    );
+  }, [brands, searchTerm]);
+
+  const toggleInfo = useCallback(() => {
+    setShowInfo((prev) => !prev);
+  }, []);
+
+  // Chargement des marques via preloadBrandsData
+  useEffect(() => {
+    let isMounted = true;
+    preloadBrandsData()
+      .then((data) => {
+        if (isMounted) {
+          setBrands(data);
+        }
+      })
+      .catch((err) => {
+        if (isMounted) {
+          setError(err.message);
+        }
+      });
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  return (
+    <Box
+      sx={{
+        backgroundColor: '#fafafa',
+        minHeight: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+      }}
+    >
+      <Helmet>
+        <title>
+          Catalogue des Marques de Clés – Reproduction de Clé en Ligne | Maison Bouvet
+        </title>
+        <meta
+          name="description"
+          content="Découvrez notre catalogue exclusif regroupant les marques leaders dans le domaine des clés. Commandez votre double de clé en ligne rapidement et en toute sécurité avec Maison Bouvet."
+        />
+        <meta
+          name="keywords"
+          content="catalogue, marques, clés, reproduction de clé, double de clé, Maison Bouvet, commande en ligne"
+        />
+        <link rel="canonical" href="https://cl-back.onrender.com/catalogue" />
+      </Helmet>
+
+      <PhoneNumber />
+
+      {/* Section Hero */}
+      <Box
+        sx={{
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          position: 'relative',
+          py: { xs: 4, md: 8 },
+          mb: -4,
+        }}
+      >
+        <Container sx={{ position: 'relative', zIndex: 1, textAlign: 'center', color: '#000' }}>
+          <Typography
+            variant="h4"
+            sx={{ fontWeight: '700', mb: 1, fontSize: { xs: '1.8rem', md: '2.5rem' } }}
+          >
+            Catalogue des Marques
+          </Typography>
+          <Typography
+            variant="subtitle1"
+            sx={{ fontWeight: '300', fontSize: { xs: '0.9rem', md: '1.2rem' } }}
+          >
+            Découvrez notre sélection exclusive de clés de qualité et commandez votre double en ligne.
           </Typography>
         </Container>
       </Box>
 
-      {/* Search Bar */}
-      <Container sx={{ py: 4 }}>
+      {/* Barre de recherche */}
+      <Container sx={{ mb: 4 }}>
         <TextField
           label="Rechercher une marque"
           variant="outlined"
           fullWidth
           value={searchTerm}
           onChange={handleSearchChange}
-          sx={{ mb: 4 }}
+          sx={{ backgroundColor: '#fff', borderRadius: 1 }}
         />
       </Container>
 
-      {/* List of Brands */}
-      <Container sx={{ py: 2 }}>
-        <Grid container spacing={2}>
-          {filteredBrands.map((brand, index) => (
-            <Grid item xs={12} sm={6} md={4} key={index}>
-              <Box
-                sx={{
-                  backgroundColor: '#FFFFFF',
-                  padding: 2,
-                  borderRadius: 1,
-                  boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
-                  textAlign: 'center',
-                }}
-              >
-                <Link to={`/dynamic/${brand.toLowerCase().replace(/\s+/g, '-')}`} style={{ textDecoration: 'none', color: 'inherit' }}>
-                  <Typography variant="subtitle1" sx={{ fontFamily: 'Roboto, sans-serif', fontWeight: '400' }}>
-                    {brand}
-                  </Typography>
-                </Link>
-              </Box>
-            </Grid>
-          ))}
-        </Grid>
+      {/* Affichage des marques */}
+      <Container sx={{ flexGrow: 1, mb: 8 }}>
+        {error ? (
+          <Typography variant="h6" align="center" color="error">
+            {error}
+          </Typography>
+        ) : (
+          <Grid container spacing={3}>
+            {filteredBrands
+              .slice()
+              .sort((a, b) => (a.nom || '').localeCompare(b.nom || ''))
+              .map((brand) => (
+                <Grid item xs={12} sm={6} md={4} key={brand.id}>
+                  <BrandCard brand={brand} />
+                </Grid>
+              ))}
+          </Grid>
+        )}
       </Container>
 
-      {/* Info Button - Floating with fade-in/out effect */}
-      {showInfo && (
-        <Fab
-          color="primary"
-          sx={{
-            position: 'fixed',
-            bottom: 12,
-            right: 12,
-            zIndex: 10,
-            backgroundColor: '#025920',
-            '&:hover': {
-              backgroundColor: '#013d17',
-            },
-            width: 40,
-            height: 40,
-            padding: 1,
-            opacity: showInfo ? 1 : 0,  // Fade in/out
-            transition: 'opacity 1s ease-in-out',  // Smooth transition
-          }}
-        >
-          <InfoIcon sx={{ fontSize: 20 }} />
-        </Fab>
-      )}
+      {/* Bouton d'info flottant */}
+      <Fab
+        onClick={toggleInfo}
+        sx={{
+          position: 'fixed',
+          bottom: { xs: 16, md: 24 },
+          right: { xs: 16, md: 24 },
+          bgcolor: '#025920',
+          color: '#fff',
+          boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.2)',
+          '&:hover': { bgcolor: '#013d17' },
+        }}
+      >
+        <InfoIcon />
+      </Fab>
 
-      {/* Info Tooltip Box with fade-in/out effect */}
-      {showInfo && (
+      {/* Slide d'information */}
+      <Slide direction="left" in={showInfo} mountOnEnter unmountOnExit>
         <Box
           sx={{
             position: 'fixed',
-            bottom: 51,
-            right: 35,
-            backgroundColor: '#FFFFFF',  // White background
-            padding: 1.5,
-            borderRadius: '6px',
-            boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
-            maxWidth: '250px',
-            zIndex: 20,
-            opacity: showInfo ? 1 : 0,  // Fade in/out
-            transition: 'opacity 1s ease-in-out',  // Smooth transition
+            bottom: { xs: 80, md: 80 },
+            right: { xs: 16, md: 24 },
+            bgcolor: '#fff',
+            borderRadius: 2,
+            p: 3,
+            boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.2)',
+            maxWidth: { xs: 280, md: 320 },
+            zIndex: 1300,
+            border: '1px solid #e0e0e0',
           }}
         >
+          <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+            <IconButton size="small" onClick={toggleInfo}>
+              <CloseIcon fontSize="small" />
+            </IconButton>
+          </Box>
           <Typography
-            variant="body2"
-            sx={{
-              fontFamily: 'Roboto, sans-serif',
-              fontWeight: '600',
-              color: '#000000',  // Black text
-              mb: 0.8,
-              fontSize: '0.875rem',
-            }}
+            variant="h6"
+            sx={{ fontWeight: '700', mb: 1, fontSize: { xs: '1rem', md: '1.25rem' } }}
           >
-            95 % du marché des clés est représenté par ces marques.
+            Informations Utiles
           </Typography>
-          <Typography
-            variant="body2"
-            sx={{
-              fontFamily: 'Roboto, sans-serif',
-              fontWeight: '400',
-              color: '#000000',  // Black text
-              lineHeight: 1.6,
-              fontSize: '0.75rem',
-            }}
-          >
-            Vous pouvez également rencontrer d'autres noms associés à ces marques comme : CYLIQ, REELAX, DARMON, FORUM, COGEFERM, ZEISS IKON, et plus encore.
+          <Typography variant="body2" sx={{ mb: 1, fontSize: { xs: '0.8rem', md: '0.9rem' } }}>
+            Découvrez une sélection pointue regroupant près de 95% des marques leaders dans le domaine des clés.
           </Typography>
-          <Typography
-            variant="body2"
-            sx={{
-              fontFamily: 'Roboto, sans-serif',
-              fontWeight: '400',
-              color: '#000000',  // Black text
-              lineHeight: 1.6,
-              fontSize: '0.75rem',
-            }}
-          >
-            Si vous trouvez des marques non listées, n'hésitez pas à nous les communiquer !
+          <Typography variant="body2" sx={{ fontSize: { xs: '0.8rem', md: '0.9rem' } }}>
+            Vous ne trouvez pas la marque que vous cherchez ? Contactez-nous pour enrichir notre catalogue.
           </Typography>
         </Box>
-      )}
-
- 
-
-
- 
+      </Slide>
     </Box>
   );
 };

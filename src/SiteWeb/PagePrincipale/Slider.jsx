@@ -15,6 +15,7 @@ import Pollux_Logo from './Marque/pollux_logo.jpeg';
 import Ronis_Logo from './Marque/ronis_logo.jpeg';
 import Silca_Logo from './Marque/silca_logo.jpeg';
 import Tesa_Logo from './Marque/tesa_logo.jpeg';
+import Vachette_Logo from './Marque/vachette_logo.jpg';
 
 // Tableau des images
 const images = [
@@ -32,6 +33,7 @@ const images = [
   Ronis_Logo,
   Silca_Logo,
   Tesa_Logo,
+  Vachette_Logo
 ];
 
 const Slider = () => {
