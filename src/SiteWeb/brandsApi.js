@@ -4,7 +4,7 @@ let preloadedBrandsPromise = null;
 
 export function preloadBrandsData() {
   if (!preloadedBrandsPromise) {
-    preloadedBrandsPromise = fetch('http://localhost:3000/brands')
+    preloadedBrandsPromise = fetch('https://cl-back.onrender.com/brands')
       .then((res) => {
         if (!res.ok) {
           throw new Error('Erreur lors de la récupération des marques');
@@ -26,7 +26,7 @@ let preloadedKeysPromises = {};
 export function preloadKeysData(brand) {
   if (!preloadedKeysPromises[brand]) {
     preloadedKeysPromises[brand] = fetch(
-      `http://localhost:3000/produit/cles?marque=${encodeURIComponent(brand)}`
+      `https://cl-back.onrender.com/produit/cles?marque=${encodeURIComponent(brand)}`
     )
       .then((res) => {
         if (!res.ok) {
