@@ -1,7 +1,7 @@
 import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { Helmet } from 'react-helmet';
 import { Box, CircularProgress } from '@mui/material';
-import { Routes, Route, useLocation, Navigate, Outlet, useNavigate } from 'react-router-dom';
+import { HashRouter, Routes, Route, useLocation, Navigate, Outlet, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
 import Header from "./appbar.jsx";
@@ -11,12 +11,7 @@ import { DataProvider } from './PagePrincipale/DataContext.jsx';
 import ProductPage from './PagePrincipale/ProductPage.jsx';
 import { preloadBrandsData, preloadKeysData } from './brandsApi';
 
-/* 
-  Mapping des redirections legacy.
-  Les clés correspondent à l'URL (après décodage) de l'ancien lien.
-  Pour chaque entrée, selon le paramètre 'mode' (numero ou postal), 
-  la nouvelle URL est indiquée.
-*/
+// Mapping des redirections legacy.
 const redirections = {
   "/commander/DMC/cle/null/Clé-Dmc-kaba": {
     numero: "https://www.cleservice.com/2-548-cle-DMC-cle-kaba-dmc-reproduction-cle.html"
@@ -495,7 +490,7 @@ const StatistiquesCommandes = lazy(() => import('../AppAdmin/stat.jsx'));
 
 const CommandePagePanier = lazy(() => import('./PagePrincipale/commandePagePanier.jsx'));
 const Login = lazy(() => import("../SiteWeb/HomePage.jsx"));
-import Catalogue from "./PagePrincipale/catologue.jsx";
+import Catalogue from "./PagePrincipale/catalogue.jsx";
 const CleDynamicPage = lazy(() => import("./PagePrincipale/CleDynamicPage.jsx"));
 const Coffrefort = lazy(() => import('./PagePrincipale/coffrefort.jsx'));
 const Telecomande = lazy(() => import('./PagePrincipale/telecommande.jsx'));
@@ -526,7 +521,10 @@ const ProtectedRouteWrapper = ({ children }) => {
   return isAuthenticated() ? children : <Navigate to="/app" />;
 };
 
-const App = () => {
+// -----------------------
+// Composant principal qui utilise les hooks de routage
+// -----------------------
+const MainApp = () => {
   const location = useLocation();
   const [showTutorial, setShowTutorial] = useState(false);
 
@@ -696,6 +694,17 @@ const App = () => {
         </>
       </DataProvider>
     </CartProvider>
+  );
+};
+
+// -----------------------
+// Composant principal exporté enveloppé dans HashRouter
+// -----------------------
+const App = () => {
+  return (
+    <HashRouter>
+      <MainApp />
+    </HashRouter>
   );
 };
 
