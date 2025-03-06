@@ -1,7 +1,7 @@
 import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { Helmet } from 'react-helmet';
 import { Box, CircularProgress } from '@mui/material';
-import { HashRouter, Routes, Route, useLocation, Navigate, Outlet, useNavigate } from 'react-router-dom';
+import { Routes, Route, useLocation, Navigate, Outlet, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
 import Header from "./appbar.jsx";
@@ -11,7 +11,12 @@ import { DataProvider } from './PagePrincipale/DataContext.jsx';
 import ProductPage from './PagePrincipale/ProductPage.jsx';
 import { preloadBrandsData, preloadKeysData } from './brandsApi';
 
-// Mapping des redirections legacy.
+/* 
+  Mapping des redirections legacy.
+  Les clés correspondent à l'URL (après décodage) de l'ancien lien.
+  Pour chaque entrée, selon le paramètre 'mode' (numero ou postal), 
+  la nouvelle URL est indiquée.
+*/
 const redirections = {
   "/commander/DMC/cle/null/Clé-Dmc-kaba": {
     numero: "https://www.cleservice.com/2-548-cle-DMC-cle-kaba-dmc-reproduction-cle.html"
@@ -521,10 +526,7 @@ const ProtectedRouteWrapper = ({ children }) => {
   return isAuthenticated() ? children : <Navigate to="/app" />;
 };
 
-// -----------------------
-// Composant principal qui utilise les hooks de routage
-// -----------------------
-const MainApp = () => {
+const App = () => {
   const location = useLocation();
   const [showTutorial, setShowTutorial] = useState(false);
 
@@ -694,17 +696,6 @@ const MainApp = () => {
         </>
       </DataProvider>
     </CartProvider>
-  );
-};
-
-// -----------------------
-// Composant principal exporté enveloppé dans HashRouter
-// -----------------------
-const App = () => {
-  return (
-    <HashRouter>
-      <MainApp />
-    </HashRouter>
   );
 };
 
