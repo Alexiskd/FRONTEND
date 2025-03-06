@@ -40,7 +40,6 @@ const MultiImageUploader = lazy(() => import('../AppAdmin/multi.jsx'));
 const PolitiqueConfidentialite = lazy(() => import('./PagePrincipale/politique.jsx'));
 const MentionsLegales = lazy(() => import('./PagePrincipale/mentionlegal.jsx'));
 const ConditionsGeneralesDeVente = lazy(() => import('./PagePrincipale/conditiongene.jsx'));
-const KeySearch = lazy(() => import('./PagePrincipale/keysearch.jsx')); // Correction du nom de fichier
 
 const AppContainer = styled.div`
   display: flex;
@@ -98,7 +97,6 @@ const App = () => {
     import("./PagePrincipale/politique.jsx");
     import("./PagePrincipale/mentionlegal.jsx");
     import("./PagePrincipale/conditiongene.jsx");
-    import("./PagePrincipale/keysearch.jsx"); // Correction du nom de fichier
   }, []);
 
   // Préchargement des données hors admin
@@ -220,4 +218,3 @@ const App = () => {
 };
 
 export default App;
-
