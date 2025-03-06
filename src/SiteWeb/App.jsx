@@ -23,7 +23,7 @@ const StatistiquesCommandes = lazy(() => import('../AppAdmin/stat.jsx')); // Nou
 // Pages utilisateurs (lazy loading)
 const CommandePagePanier = lazy(() => import('./PagePrincipale/commandePagePanier.jsx'));
 const Login = lazy(() => import("../SiteWeb/HomePage.jsx"));
-import Catalogue from "./PagePrincipale/catalogue.jsx"; // Vérifiez le nom du fichier
+import Catalogue from "./PagePrincipale/catologue.jsx"; // Vérifiez le nom du fichier
 const CleDynamicPage = lazy(() => import("./PagePrincipale/CleDynamicPage.jsx"));
 const Coffrefort = lazy(() => import('./PagePrincipale/coffrefort.jsx'));
 const Telecomande = lazy(() => import('./PagePrincipale/telecommande.jsx'));
