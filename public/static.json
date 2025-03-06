@@ -1,5 +1,13 @@
 {
   "routes": [
-    { "src": "/(.*)", "dest": "/index.html" }
+    {
+      "src": "/produit/ABUS/Cl%C3%A9-Abus-XP-2",
+      "dest": "https://www.cleservice.com/2-15-cle-ABUS-xp-2-reproduction-cle.html",
+      "status": 301
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
+    }
   ]
 }
