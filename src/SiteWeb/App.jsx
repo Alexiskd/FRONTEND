@@ -495,7 +495,7 @@ const StatistiquesCommandes = lazy(() => import('../AppAdmin/stat.jsx'));
 
 const CommandePagePanier = lazy(() => import('./PagePrincipale/commandePagePanier.jsx'));
 const Login = lazy(() => import("../SiteWeb/HomePage.jsx"));
-import Catalogue from "./PagePrincipale/catalogue.jsx";
+import Catalogue from "./PagePrincipale/catologue.jsx";
 const CleDynamicPage = lazy(() => import("./PagePrincipale/CleDynamicPage.jsx"));
 const Coffrefort = lazy(() => import('./PagePrincipale/coffrefort.jsx'));
 const Telecomande = lazy(() => import('./PagePrincipale/telecommande.jsx'));
