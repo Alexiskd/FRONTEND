@@ -1,7 +1,7 @@
 import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { Helmet } from 'react-helmet';
 import { Box, CircularProgress } from '@mui/material';
-import { Routes, Route, useLocation, Navigate, Outlet } from 'react-router-dom';
+import { Routes, Route, useLocation, Navigate, Outlet, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
 import Header from "./appbar.jsx";
@@ -12,7 +12,7 @@ import ProductPage from './PagePrincipale/ProductPage.jsx';
 import { preloadBrandsData, preloadKeysData } from './brandsApi';
 
 // -----------------------
-// Redirections legacy
+// Mapping des redirections legacy
 // -----------------------
 const redirections = {
   "/commander/DMC/cle/null/Clé-Dmc-kaba": {
@@ -76,10 +76,10 @@ const redirections = {
     numero: "https://www.cleservice.com/4-299-cle-DOM-corbin-reproduction-cle.html",
     postal: "https://www.cleservice.com/1-299-cle-DOM-corbin-reproduction-cle.html"
   },
-  "/commander/DOM/cle/null/Clé-Dom-Cogeferm-IX6-SR-/-IX10": {
+  "/commander/DOM/cle/null/Clé-Dom-Cogeferm-IX6-SR-%2F-IX10": {
     numero: "https://www.cleservice.com/2-431-cle-DOM-cogeferm-ix6-sr-ix10-reproduction-cle.html"
   },
-  "/commander/DOM/cle/null/Clé-Dom-Cogeferm-IX5-/-IX6": {
+  "/commander/DOM/cle/null/Clé-Dom-Cogeferm-IX5-%2F-IX6": {
     numero: "https://www.cleservice.com/2-210-cle-DOM-cogeferm-ix5-ix6-reproduction-cle.html"
   },
   "/commander/ERREBI/cle/null/Clé-Errebi": {
@@ -218,8 +218,8 @@ const redirections = {
   "/commander/KESO/cle/null/Clé-Keso-1000-ou-2000-Omega": {
     numero: "https://www.cleservice.com/2-146-cle-KESO-1000-ou-2000-reproduction-cle.html"
   },
+  // Pour ce même chemin, on gère ici les deux cas possibles pour "numero" et "postal"
   "/commander/KESO/cle/null/Clé-Keso-1000-ou-2000": {
-    // En cas de conflit, ici on choisit pour 'numero' la deuxième URL indiquée
     numero: "https://www.cleservice.com/2-262-cle-KESO-1000-ou-2000-omega-reproduction-cle.html",
     postal: "https://www.cleservice.com/1-262-cle-KESO-1000-ou-2000-omega-reproduction-cle.html"
   },
@@ -242,9 +242,8 @@ const redirections = {
     numero: "https://www.cleservice.com/4-294-cle-LAPERCHE-diam-plus-reproduction-cle.html",
     postal: "https://www.cleservice.com/1-97-cle-LAPERCHE-diam-reproduction-cle.html"
   },
-  // Lien Lotus (aucun ancien lien fourni, seule la nouvelle URL est indiquée)
+  // Lien Lotus
   "/commander/LOTUS": {
-    // Par exemple, pour afficher la nouvelle page Lotus
     any: "https://www.cleservice.com/1-100-cle-LOTUS-lotus-reproduction-cle.html"
   },
   "/commander/MEDECO/cle/null/Clé-Medeco-Duracam": {
@@ -287,7 +286,7 @@ const redirections = {
   "/commander/MUL-T-LOCK/cle/null/Clé-Mul-t-lock-MT5+": {
     numero: "https://www.cleservice.com/2-551-cle-MUL-T-LOCK-mt5-plus-reproduction-cle.html"
   },
-  "/commander/MUL-T-LOCK/cle/null/Clé-Mul-t-lock-Interactive+-262S": {
+  "/commander/MUL-T-LOCK/cle/null/Clé-Mul-t-lock-Interactive+ -262S": {
     numero: "https://www.cleservice.com/2-561-cle-MUL-T-LOCK-interactive-plus-262s-reproduction-cle.html"
   },
   "/commander/MUL-T-LOCK/cle/null/Clé-Mul-t-lock-Interactive-262-S-Tete-Bleue": {
@@ -310,6 +309,24 @@ const redirections = {
   },
   "/commander/MUL-T-LOCK/cle/null/Clé-Mul-t-lock-7-X-7": {
     numero: "https://www.cleservice.com/2-326-cle-MUL-T-LOCK-7-x-7-reproduction-cle.html"
+  },
+  "https://www.cleservice.com/2-115-cle-PICARD-iseo-reproduction-cle.html": {
+    any: "https://www.cleservice.com/2-115-cle-PICARD-iseo-reproduction-cle.html"
+  },
+  "https://www.cleservice.com/4-114-cle-PICARD-kaba-reproduction-cle.html": {
+    any: "https://www.cleservice.com/4-114-cle-PICARD-kaba-reproduction-cle.html"
+  },
+  "https://www.cleservice.com/2-328-cle-PICARD-kaba-20-reproduction-cle.html": {
+    any: "https://www.cleservice.com/2-328-cle-PICARD-kaba-20-reproduction-cle.html"
+  },
+  "https://www.cleservice.com/2-389-cle-PICARD-kv10-reproduction-cle.html": {
+    any: "https://www.cleservice.com/2-389-cle-PICARD-kv10-reproduction-cle.html"
+  },
+  "https://www.cleservice.com/1-116-cle-PICARD-vak-reproduction-cle.html": {
+    any: "https://www.cleservice.com/1-116-cle-PICARD-vak-reproduction-cle.html"
+  },
+  "https://www.cleservice.com/2-116-cle-PICARD-vak-reproduction-cle.html": {
+    any: "https://www.cleservice.com/2-116-cle-PICARD-vak-reproduction-cle.html"
   },
   "/commander/PICARD/cle/null/Clé-Picard-Vak": {
     numero: "https://www.cleservice.com/2-117-cle-PICARD-vak-mobile-reproduction-cle.html"
@@ -440,19 +457,34 @@ const redirections = {
   }
 };
 
+// -----------------------
+// Composant gérant les redirections legacy
+// -----------------------
 const LegacyRedirectHandler = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const searchParams = new URLSearchParams(location.search);
   const mode = searchParams.get('mode');
-  const redirectUrl =
-    redirections[location.pathname] &&
-    (redirections[location.pathname][mode] || redirections[location.pathname].any);
 
-  return redirectUrl ? <Navigate replace to={redirectUrl} /> : <Outlet />;
+  // Debug : vérification du chemin et du mode
+  console.log("LegacyRedirectHandler – pathname:", location.pathname, "mode:", mode);
+
+  const legacyMapping = redirections[location.pathname];
+  useEffect(() => {
+    if (legacyMapping) {
+      const newUrl = legacyMapping[mode] || legacyMapping.any;
+      if (newUrl) {
+        // Redirige en remplaçant l'URL dans l'historique sans rechargement complet
+        navigate(newUrl, { replace: true });
+      }
+    }
+  }, [legacyMapping, mode, navigate]);
+
+  return <Outlet />;
 };
 
 // -----------------------
-// Composants en lazy loading
+// Importation des composants en lazy loading
 // -----------------------
 const Barreadmin = lazy(() => import('../AppAdmin/barreadmin.jsx'));
 const Ajoutez = lazy(() => import('../AppAdmin/ajoutez.jsx'));
@@ -464,7 +496,7 @@ const StatistiquesCommandes = lazy(() => import('../AppAdmin/stat.jsx'));
 
 const CommandePagePanier = lazy(() => import('./PagePrincipale/commandePagePanier.jsx'));
 const Login = lazy(() => import("../SiteWeb/HomePage.jsx"));
-import Catalogue from "./PagePrincipale/catologue.jsx";
+import Catalogue from "./PagePrincipale/catalogue.jsx";
 const CleDynamicPage = lazy(() => import("./PagePrincipale/CleDynamicPage.jsx"));
 const Coffrefort = lazy(() => import('./PagePrincipale/coffrefort.jsx'));
 const Telecomande = lazy(() => import('./PagePrincipale/telecommande.jsx'));
@@ -605,11 +637,10 @@ const App = () => {
                 <Route path="/:brandFull" element={<CleDynamicPage />} />
                 <Route path="/devis.php" element={<Devis />} />
                 <Route path="/qui.php" element={<AboutUs />} />
-                {/* Regroupement des routes sous /commander pour gestion des anciennes URL */}
+                
+                {/* Pour les anciennes URL sous /commander */}
                 <Route path="/commander/*" element={<LegacyRedirectHandler />}>
-                  {/* Si aucun ancien lien n’est détecté, on affiche la page commande */}
                   <Route path=":brandName/cle/:referenceEbauche/:articleName" element={<CommandePage />} />
-                  {/* Vous pouvez ajouter ici d’autres routes sous /commander */}
                   <Route path="*" element={
                     <div style={{ textAlign: 'center', padding: '50px' }}>
                       <h1 style={{ fontSize: '3rem', color: '#FF4D4F' }}>404 - Page Non Trouvée</h1>
@@ -670,3 +701,4 @@ const App = () => {
 };
 
 export default App;
+
