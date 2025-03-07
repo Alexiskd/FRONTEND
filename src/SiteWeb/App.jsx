@@ -6,7 +6,6 @@ import styled from 'styled-components';
 
 import Header from "./appbar.jsx";
 import Footer from './PagePrincipale/footer.jsx';
-import Navigation from './Navigation'; // Import du composant Navigation
 import { CartProvider } from './context/CartContext.jsx';
 import { DataProvider } from './PagePrincipale/DataContext.jsx';
 import ProductPage from './PagePrincipale/ProductPage.jsx';
@@ -134,8 +133,6 @@ const App = () => {
           </noscript>
           <AppContainer className="app">
             {!isAppRoute && <Header />}
-            {/* Insertion de la navigation pour les pages publiques */}
-            {!isAppRoute && <Navigation />}
             {showTutorial && (
               <Suspense fallback={<div style={{ textAlign: 'center', padding: '20px' }}>Chargement du tutoriel...</div>}>
                 <TutorialPopup onClose={handleCloseTutorial} />
@@ -171,6 +168,7 @@ const App = () => {
                 <Route path="/politique-confidentialite" element={<PolitiqueConfidentialite />} />
                 <Route path="/mentions-legales" element={<MentionsLegales />} />
                 <Route path="/conditions-generales" element={<ConditionsGeneralesDeVente />} />
+                {/* Nouvelle route produit avec 3 paramètres */}
                 <Route path="/produit/:brandName/:productName" element={<ProductPage />} />
                 
                 {/* Routes Admin protégées */}
