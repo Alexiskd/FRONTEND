@@ -38,7 +38,7 @@ const Badgeuu = () => {
     setSnackbarOpen(false);
   };
 
-  // Styles
+  // Styles modernisés
   const styles = {
     header: {
       backgroundColor: '#01591f',
@@ -75,9 +75,15 @@ const Badgeuu = () => {
       boxShadow: '0px 6px 20px rgba(0, 0, 0, 0.15)',
       overflow: 'hidden',
     },
+    // Réduction de la taille de l'image et style modernisé
     cardMedia: {
-      height: 220,
+      height: 150,
       objectFit: 'cover',
+      filter: 'brightness(0.95)',
+      transition: 'transform 0.3s ease',
+      '&:hover': {
+        transform: 'scale(1.03)',
+      },
     },
     cardContent: {
       p: 3,
@@ -217,3 +223,4 @@ const Badgeuu = () => {
 };
 
 export default Badgeuu;
+
