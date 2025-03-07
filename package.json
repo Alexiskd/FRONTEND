@@ -3,6 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "packageManager": "yarn@1.22.22",
   "scripts": {
     "start": "node --max-old-space-size=4096 dist/main.js",
     "dev": "vite",
@@ -22,6 +23,7 @@
     "@nestjs/typeorm": "^10.0.2",
     "@tanstack/react-query": "^5.66.0",
     "axios": "^1.7.9",
+    "connect-history-api-fallback": "^2.0.0",
     "cors": "^2.8.5",
     "date-fns": "^3.3.1",
     "express": "^4.21.2",
