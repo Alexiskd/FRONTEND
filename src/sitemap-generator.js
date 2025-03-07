@@ -1,7 +1,8 @@
+// sitemap-generator.js
 const path = require('path');
 const Sitemap = require('react-router-sitemap').default;
 
-// Définissez ici la liste des routes publiques de votre application
+// Liste de vos routes statiques à inclure dans le sitemap
 const routes = [
   '/',
   '/index.php',
@@ -23,15 +24,11 @@ const routes = [
   '/upload-multiple',
   '/politique-confidentialite',
   '/mentions-legales',
-  '/conditions-generales',
-  // Ajoutez d'autres routes fixes si nécessaire
+  '/conditions-generales'
 ];
 
-// Créez et enregistrez le sitemap
-function generateSitemap() {
-  return new Sitemap(routes)
-    .build('https://www.votresite.com') // Remplacez par l'URL de votre site
-    .save(path.resolve('./public/sitemap.xml'));
-}
+new Sitemap(routes)
+  .build('https://www.votresite.com') // Remplacez par l'URL de votre site
+  .save(path.resolve('./public/sitemap.xml'));
 
-generateSitemap();
+console.log('Sitemap généré avec succès.');
