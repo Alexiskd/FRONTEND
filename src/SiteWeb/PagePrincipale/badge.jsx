@@ -28,7 +28,7 @@ const Badgeuu = () => {
     );
   };
 
-  // Redirection vers la page produit (mise à jour effectuée)
+  // Redirection vers la page produit
   const handleViewProduct = () => {
     navigate(`/produit/Vigik/${encodeURIComponent('Badge Vigik')}`);
   };
@@ -223,4 +223,5 @@ const Badgeuu = () => {
 };
 
 export default Badgeuu;
+
 
