@@ -5,6 +5,6 @@ import react from '@vitejs/plugin-react';
 export default defineConfig({
   plugins: [react()],
   build: {
-    sourcemap: true, // active les sourcemaps pour faciliter le débogage
+    sourcemap: true, // Active les sourcemaps pour obtenir une stack trace lisible
   },
 });
