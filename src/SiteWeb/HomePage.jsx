@@ -17,7 +17,7 @@ import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import VerifiedIcon from '@mui/icons-material/Verified';
 import FactoryIcon from '@mui/icons-material/Factory';
 import Slider from './PagePrincipale/Slider';
-import KeySearch from './PagePrincipale/keyshearch.jsx'; // Vérifiez le nom de votre fichier (par exemple "keysearch.jsx" si c'est le cas)
+import KeySearch from './PagePrincipale/keyshearch.jsx';
 
 // Variables de couleurs et typographie
 const primaryColor = '#2E7D32';
@@ -26,25 +26,51 @@ const lightBackground = '#F1F8E9';
 const textPrimary = '#212121';
 const textSecondary = '#424242';
 
-// Style commun pour les cartes
+// Animation pour un léger effet de pulsation
+const pulseAnimation = {
+  animation: 'pulse 2s infinite'
+};
+
+// Définition des animations en CSS-in-JS
+const GlobalStyles = styled('style')`
+  @keyframes laser {
+    0% { left: -100%; }
+    50% { left: 100%; }
+    100% { left: 100%; }
+  }
+  @keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.03); }
+    100% { transform: scale(1); }
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+`;
+
+// Style commun pour les cartes, avec un fond dégradé et un effet d'animation sur hover
 const cardStyle = {
-  backgroundColor: '#FFFFFF',
+  background: 'linear-gradient(135deg, #ffffff, #e8f5e9)',
   padding: { xs: 2, sm: 4 },
-  borderRadius: '4px',
+  borderRadius: '8px',
   boxShadow: '0px 4px 12px rgba(0,0,0,0.1)',
-  transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+  transition: 'transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease',
+  position: 'relative',
+  overflow: 'hidden',
   '&:hover': {
     transform: 'scale(1.03)',
-    boxShadow: '0px 6px 16px rgba(0,0,0,0.15)'
+    boxShadow: '0px 6px 16px rgba(0,0,0,0.15)',
+    background: 'linear-gradient(135deg, #f1f8e9, #ffffff)'
   }
 };
 
-// Bouton personnalisé avec adaptation aux écrans mobiles
+// Bouton personnalisé avec effets d'animation et adaptation mobile
 const CustomButton = styled('button')(({ theme }) => ({
-  backgroundColor: primaryColor,
+  background: `linear-gradient(45deg, ${primaryColor}, ${primaryDark})`,
   border: 'none',
   padding: '12px 24px',
-  borderRadius: '4px',
+  borderRadius: '8px',
   cursor: 'pointer',
   boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.2)',
   transition: 'all 0.3s ease',
@@ -55,13 +81,13 @@ const CustomButton = styled('button')(({ theme }) => ({
   display: 'inline-flex',
   alignItems: 'center',
   justifyContent: 'center',
-  // Réduction de la taille et du padding sur mobile
+  animation: 'fadeIn 1s ease',
   [theme.breakpoints.down('sm')]: {
     padding: '10px 20px',
     fontSize: '0.9rem'
   },
   '&:hover': {
-    backgroundColor: primaryDark,
+    background: `linear-gradient(45deg, ${primaryDark}, ${primaryColor})`,
     boxShadow: '0px 6px 16px rgba(0, 0, 0, 0.3)',
     transform: 'translateY(-2px)',
   },
@@ -72,6 +98,9 @@ const CustomButton = styled('button')(({ theme }) => ({
 
 const GradientText = styled('span')({
   color: '#fff',
+  background: 'linear-gradient(45deg, #fff, #c8e6c9)',
+  WebkitBackgroundClip: 'text',
+  WebkitTextFillColor: 'transparent'
 });
 
 // Composant bouton personnalisable (utilisable avec le prop "as")
@@ -94,21 +123,15 @@ const Login = () => {
           content="Doublez vos clés en quelques clics avec CléService. Commandez votre copie de clé en ligne, livrée à domicile. Boutique à Paris 75017, forte de plus de 50 ans d'expérience."
         />
         <link rel="canonical" href="https://www.cleservice.com/" />
-
-        {/* Open Graph / Facebook */}
         <meta property="og:title" content="CléService - Double de clé en ligne, Facile et Rapide" />
         <meta property="og:description" content="Doublez vos clés en quelques clics avec CléService. Commandez votre copie de clé en ligne, livrée à domicile." />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://www.cleservice.com/" />
         <meta property="og:image" content="https://www.cleservice.com/logo.png" />
-
-        {/* Twitter */}
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="CléService - Double de clé en ligne, Facile et Rapide" />
         <meta name="twitter:description" content="Doublez vos clés en quelques clics avec CléService. Commandez votre copie de clé en ligne, livrée à domicile." />
         <meta name="twitter:image" content="https://www.cleservice.com/logo.png" />
-
-        {/* Données structurées (JSON-LD) */}
         <script type="application/ld+json">
           {`
           {
@@ -129,19 +152,17 @@ const Login = () => {
           }
           `}
         </script>
-
-        {/* Préconnexion aux ressources critiques */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="true" />
       </Helmet>
 
-      {/* Fallback pour les utilisateurs sans JavaScript */}
       <noscript>
         <div style={{ padding: '1rem', textAlign: 'center', background: '#f8d7da', color: '#721c24' }}>
           Cette application fonctionne mieux avec JavaScript activé.
         </div>
       </noscript>
 
+      <GlobalStyles />
       <Box
         component="main"
         sx={{
@@ -149,32 +170,23 @@ const Login = () => {
           minHeight: '70vh',
           display: 'flex',
           flexDirection: 'column',
-          fontFamily: '"Roboto", sans-serif'
+          fontFamily: '"Roboto", sans-serif',
+          animation: 'fadeIn 1s ease'
         }}
       >
-        {/* Animation pour le numéro de téléphone */}
-        <style>
-          {`
-            @keyframes laser {
-              0% { left: -100%; }
-              50% { left: 100%; }
-              100% { left: 100%; }
-            }
-          `}
-        </style>
-
         {/* HEADER - Bandeaux et Hero Section */}
         <header>
           <Box
             sx={{
               height: { xs: '56px', md: '0px' },
               backgroundColor: "#01591f",
+              ...pulseAnimation
             }}
           />
           <Box
             sx={{
               height: { xs: '100px', md: '120px' },
-              backgroundColor: "#01591f",
+              backgroundColor: "#01591f"
             }}
           />
 
@@ -185,8 +197,8 @@ const Login = () => {
               backgroundColor: '#F9F9F9',
               color: textPrimary,
               py: { xs: 2, md: 4 },
-              borderBottomLeftRadius: '4px',
-              borderBottomRightRadius: '4px',
+              borderBottomLeftRadius: '8px',
+              borderBottomRightRadius: '8px',
               overflow: 'hidden'
             }}
           >
@@ -196,7 +208,8 @@ const Login = () => {
                 position: 'relative', 
                 zIndex: 1, 
                 pt: { xs: 8, md: 10 },
-                textAlign: 'center'
+                textAlign: 'center',
+                animation: 'fadeIn 1.5s ease'
               }}
             >
               <Typography
@@ -206,7 +219,8 @@ const Login = () => {
                 sx={{ 
                   fontWeight: '700',
                   mb: 2,
-                  fontSize: { xs: '1.75rem', md: '2.5rem' }
+                  fontSize: { xs: '1.75rem', md: '2.5rem' },
+                  textShadow: '1px 1px 3px rgba(0,0,0,0.1)'
                 }}
               >
                 Un double de clé, une copie ? Facile et rapide !
@@ -265,7 +279,8 @@ const Login = () => {
               position: 'relative', 
               zIndex: 1, 
               py: 2,
-              mx: 'auto'
+              mx: 'auto',
+              animation: 'fadeIn 1.5s ease'
             }}
           >
             <Box
@@ -279,7 +294,6 @@ const Login = () => {
               <MyCustomButton as={Link} to="/trouvez.php">
                 Commander un double de clé
               </MyCustomButton>
-              
               <MyCustomButton as={Link} to="/contact.php">
                 Demande de devis
               </MyCustomButton>
@@ -294,9 +308,10 @@ const Login = () => {
             sx={{
               py: { xs: 4, md: 6 },
               backgroundColor: lightBackground,
-              borderRadius: '8px',
+              borderRadius: '12px',
               mb: { xs: 4, md: 6 },
-              mx: 'auto'
+              mx: 'auto',
+              animation: 'fadeIn 2s ease'
             }}
           >
             <Typography
@@ -318,8 +333,12 @@ const Login = () => {
             <Box
               sx={{
                 boxShadow: '0px 4px 12px rgba(0,0,0,0.1)',
-                borderRadius: '8px',
-                overflow: 'hidden'
+                borderRadius: '12px',
+                overflow: 'hidden',
+                transition: 'transform 0.5s ease',
+                '&:hover': {
+                  transform: 'scale(1.02)'
+                }
               }}
             >
               <iframe
@@ -342,9 +361,10 @@ const Login = () => {
             sx={{
               py: { xs: 4, md: 6 },
               backgroundColor: '#FFFFFF',
-              borderRadius: '4px',
+              borderRadius: '8px',
               mb: { xs: 4, md: 6 },
-              mx: 'auto'
+              mx: 'auto',
+              animation: 'fadeIn 2s ease'
             }}
           >
             <Typography
@@ -394,7 +414,7 @@ const Login = () => {
               </Grid>
               <Grid item xs={12} sm={4} sx={{ display: 'flex', justifyContent: 'center' }}>
                 <Box sx={cardStyle}>
-                  <Box sx={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center' }}>
+                  <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                     <KeyIcon
                       sx={{ fontSize: { xs: 40, md: 50 }, color: primaryColor, mx: 0.5 }}
                       role="img"
@@ -423,6 +443,85 @@ const Login = () => {
           </Container>
         </section>
 
+        {/* SECTION - Processus de Commande Simplifié avec grand flex moderne */}
+        <section>
+          <Container
+            maxWidth="lg"
+            sx={{
+              py: { xs: 4, md: 6 },
+              backgroundColor: lightBackground,
+              borderRadius: '12px',
+              mb: { xs: 4, md: 6 },
+              mx: 'auto',
+              animation: 'fadeIn 2s ease'
+            }}
+          >
+            <Typography
+              component="h2"
+              variant="h4"
+              sx={{
+                fontWeight: '700',
+                mb: 4,
+                textAlign: 'center',
+                color: textPrimary,
+                fontSize: { xs: '1.5rem', md: '2rem' }
+              }}
+            >
+              Processus de Commande Simplifié
+            </Typography>
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexWrap: 'wrap',
+                gap: 4,
+                p: 4,
+                borderRadius: '12px',
+                background: 'linear-gradient(135deg, #e8f5e9, #ffffff)',
+                boxShadow: '0px 4px 12px rgba(0,0,0,0.1)',
+                transition: 'transform 0.3s ease',
+                '&:hover': {
+                  transform: 'scale(1.02)',
+                }
+              }}
+            >
+              {[
+                { step: '1. Sélectionnez votre clé', icon: <ArrowDownwardIcon sx={{ fontSize: { xs: 50, md: 70 }, transform: 'rotate(-90deg)' }} /> },
+                { step: '2. Tapez votre numéro de clé', icon: <ArrowDownwardIcon sx={{ fontSize: { xs: 50, md: 70 }, transform: 'rotate(-90deg)' }} /> },
+                { step: '3. Payez en ligne', icon: <ArrowDownwardIcon sx={{ fontSize: { xs: 50, md: 70 }, transform: 'rotate(-90deg)' }} /> },
+                { step: '4. Livraison à domicile', icon: <ArrowDownwardIcon sx={{ fontSize: { xs: 50, md: 70 }, transform: 'rotate(-90deg)' }} /> }
+              ].map((item, index) => (
+                <Box
+                  key={index}
+                  sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    minWidth: { xs: '150px', md: '200px' }
+                  }}
+                >
+                  <Box sx={{ mb: 2 }}>
+                    {item.icon}
+                  </Box>
+                  <Typography
+                    component="p"
+                    variant="h6"
+                    sx={{
+                      fontWeight: '500',
+                      color: textSecondary,
+                      textAlign: 'center',
+                      fontSize: { xs: '1rem', md: '1.125rem' }
+                    }}
+                  >
+                    {item.step}
+                  </Typography>
+                </Box>
+              ))}
+            </Box>
+          </Container>
+        </section>
+
         {/* SECTION - Pourquoi Nous Choisir */}
         <section>
           <Container
@@ -430,9 +529,10 @@ const Login = () => {
             sx={{
               py: { xs: 4, md: 6 },
               backgroundColor: lightBackground,
-              borderRadius: '4px',
+              borderRadius: '8px',
               mb: { xs: 4, md: 6 },
-              mx: 'auto'
+              mx: 'auto',
+              animation: 'fadeIn 2s ease'
             }}
           >
             <Typography
@@ -490,9 +590,10 @@ const Login = () => {
             sx={{
               py: { xs: 4, md: 6 },
               backgroundColor: '#FFFFFF',
-              borderRadius: '4px',
+              borderRadius: '8px',
               mb: { xs: 4, md: 6 },
-              mx: 'auto'
+              mx: 'auto',
+              animation: 'fadeIn 2s ease'
             }}
           >
             <Typography
@@ -524,65 +625,6 @@ const Login = () => {
           </Container>
         </section>
 
-        {/* SECTION - Processus de Commande */}
-        <section>
-          <Container
-            maxWidth="lg"
-            sx={{
-              py: { xs: 4, md: 6 },
-              backgroundColor: lightBackground,
-              borderRadius: '4px',
-              mb: { xs: 4, md: 6 },
-              mx: 'auto'
-            }}
-          >
-            <Typography
-              component="h2"
-              variant="h4"
-              sx={{
-                fontWeight: '700',
-                mb: 4,
-                textAlign: 'center',
-                color: textPrimary,
-                fontSize: { xs: '1.5rem', md: '2rem' }
-              }}
-            >
-              Processus de Commande Simplifié
-            </Typography>
-            <Grid container spacing={4} justifyContent="center">
-              {[
-                { step: '1. Sélectionnez votre clé' },
-                { step: '2. Tapez votre numéro de clé' },
-                { step: '3. Payez en ligne' },
-                { step: '4. Livraison à domicile' }
-              ].map((item, index) => (
-                <Grid
-                  key={index}
-                  item
-                  xs={12}
-                  sm={6}
-                  md={3}
-                  sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}
-                >
-                  <IconButton
-                    sx={{ fontSize: { xs: '1.5rem', md: '2rem' }, color: primaryColor }}
-                    aria-label={`Étape ${index + 1}`}
-                  >
-                    <ArrowDownwardIcon sx={{ transform: 'rotate(-90deg)' }} />
-                  </IconButton>
-                  <Typography
-                    component="p"
-                    variant="h6"
-                    sx={{ mt: 2, fontWeight: '500', color: textSecondary, textAlign: 'center', fontSize: { xs: '0.9rem', md: '1rem' } }}
-                  >
-                    {item.step}
-                  </Typography>
-                </Grid>
-              ))}
-            </Grid>
-          </Container>
-        </section>
-
         {/* SECTION - Engagement Qualité & Sécurité */}
         <section>
           <Container
@@ -590,9 +632,10 @@ const Login = () => {
             sx={{
               py: { xs: 4, md: 6 },
               backgroundColor: '#FFFFFF',
-              borderRadius: '4px',
+              borderRadius: '8px',
               mb: { xs: 4, md: 6 },
-              mx: 'auto'
+              mx: 'auto',
+              animation: 'fadeIn 2s ease'
             }}
           >
             <Typography
