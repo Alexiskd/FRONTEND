@@ -5,6 +5,6 @@ import react from '@vitejs/plugin-react';
 export default defineConfig({
   plugins: [react()],
   build: {
-    sourcemap: true, // Active les source maps pour déboguer le code minifié
+    sourcemap: false, // Désactive les source maps en production
   },
 });
