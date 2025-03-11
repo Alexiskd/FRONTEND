@@ -133,10 +133,12 @@ const ProductPage = () => {
         if (!response.ok) {
           throw new Error('Produit introuvable.');
         }
-        const data = await response.json();
-        if (!data) {
+        // Récupère la réponse en texte pour vérifier si elle est vide
+        const text = await response.text();
+        if (!text) {
           throw new Error('Réponse vide du serveur.');
         }
+        const data = JSON.parse(text);
         setProduct(data);
       } catch (err) {
         console.error(err);
@@ -148,7 +150,7 @@ const ProductPage = () => {
     fetchProduct();
   }, [finalProductName]);
 
-  // Pour la navigation, on reformate le nom en version "slug" (motifs séparés par des tirets)
+  // Pour la navigation, on reformate le nom en version "slug" (mots séparés par des tirets)
   const formattedProductName = finalProductName.trim().split(' ').join('-');
 
   // Navigation vers la page de commande en utilisant finalProductName pour le back-end
