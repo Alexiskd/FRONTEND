@@ -1,4 +1,4 @@
-// src/entry-client.jsx
+// src/entry-client.jsx (ancienne version)
 import React from 'react';
 import ReactDOM from 'react-dom';
 import App from './SiteWeb/App';
