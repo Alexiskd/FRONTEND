@@ -3,7 +3,6 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "packageManager": "yarn@1.22.22",
   "scripts": {
     "start": "node --max-old-space-size=4096 dist/main.js",
     "dev": "vite",
@@ -11,7 +10,7 @@
     "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
     "typeorm": "typeorm",
-    "sitemap": "(node sitemap-builder.cjs)"
+    "sitemap": "node sitemap-builder.cjs"
   },
   "dependencies": {
     "@emotion/react": "^11.11.3",

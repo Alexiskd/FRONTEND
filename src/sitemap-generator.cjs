@@ -1,4 +1,4 @@
-// sitemap-generator.js
+// sitemap-generator.cjs
 const path = require('path');
 const Sitemap = require('react-router-sitemap').default;
 
@@ -28,7 +28,7 @@ const routes = [
 ];
 
 new Sitemap(routes)
-  .build('https://www.votresite.com') // Remplacez par l'URL de votre site
+  .build('https://www.votresite.com')
   .save(path.resolve('./public/sitemap.xml'));
 
 console.log('Sitemap généré avec succès.');
