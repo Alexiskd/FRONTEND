@@ -113,7 +113,7 @@ const MyCustomButton = React.forwardRef(function MyCustomButton(props, ref) {
   );
 });
 
-const HomePage = () => {
+const Login = () => {
   return (
     <>
       <Helmet>
@@ -132,26 +132,29 @@ const HomePage = () => {
         <meta name="twitter:title" content="CléService - Double de clé en ligne, Facile et Rapide" />
         <meta name="twitter:description" content="Doublez vos clés en quelques clics avec CléService. Commandez votre copie de clé en ligne, livrée à domicile." />
         <meta name="twitter:image" content="https://www.cleservice.com/logo.png" />
-        <script type="application/ld+json" dangerouslySetInnerHTML={{
-          __html: `
-          {
-            "@context": "https://schema.org",
-            "@type": "LocalBusiness",
-            "name": "CléService",
-            "image": "https://www.cleservice.com/logo.png",
-            "telephone": "01 42 67 48 61",
-            "address": {
-              "@type": "PostalAddress",
-              "streetAddress": "20 rue de Levis",
-              "addressLocality": "Paris",
-              "postalCode": "75017",
-              "addressCountry": "FR"
-            },
-            "url": "https://www.cleservice.com/",
-            "priceRange": "$$"
-          }
-          `
-        }} />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: `
+            {
+              "@context": "https://schema.org",
+              "@type": "LocalBusiness",
+              "name": "CléService",
+              "image": "https://www.cleservice.com/logo.png",
+              "telephone": "01 42 67 48 61",
+              "address": {
+                "@type": "PostalAddress",
+                "streetAddress": "20 rue de Levis",
+                "addressLocality": "Paris",
+                "postalCode": "75017",
+                "addressCountry": "FR"
+              },
+              "url": "https://www.cleservice.com/",
+              "priceRange": "$$"
+            }
+            `
+          }}
+        />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="true" />
       </Helmet>
@@ -298,10 +301,6 @@ const HomePage = () => {
               <MyCustomButton as={Link} to="/contact.php">
                 Demande de devis
               </MyCustomButton>
-            </Box>
-            {/* Insertion de la composante de recherche */}
-            <Box sx={{ mt: 4 }}>
-              <KeySearch />
             </Box>
           </Container>
         </section>
@@ -687,6 +686,4 @@ const HomePage = () => {
   );
 };
 
-export default HomePage;
-
-
+export default Login;
