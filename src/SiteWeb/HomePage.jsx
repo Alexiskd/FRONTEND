@@ -166,6 +166,7 @@ const Login = () => {
       <Box
         component="main"
         sx={{
+          mt: '50px', // Décalage vers le bas
           backgroundColor: '#F9F9F9',
           minHeight: '70vh',
           display: 'flex',
@@ -683,4 +684,3 @@ const Login = () => {
 };
 
 export default Login;
-
