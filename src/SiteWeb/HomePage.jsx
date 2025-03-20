@@ -17,7 +17,7 @@ import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import VerifiedIcon from '@mui/icons-material/Verified';
 import FactoryIcon from '@mui/icons-material/Factory';
 import Slider from './PagePrincipale/Slider';
-import KeySearch from './PagePrincipale/keyshearch.jsx';
+import KeySearch from './PagePrincipale/KeySearch.jsx'; // Correction du nom de fichier
 
 // Variables de couleurs et typographie
 const primaryColor = '#2E7D32';
@@ -113,7 +113,7 @@ const MyCustomButton = React.forwardRef(function MyCustomButton(props, ref) {
   );
 });
 
-const Login = () => {
+const HomePage = () => {
   return (
     <>
       <Helmet>
@@ -132,8 +132,8 @@ const Login = () => {
         <meta name="twitter:title" content="CléService - Double de clé en ligne, Facile et Rapide" />
         <meta name="twitter:description" content="Doublez vos clés en quelques clics avec CléService. Commandez votre copie de clé en ligne, livrée à domicile." />
         <meta name="twitter:image" content="https://www.cleservice.com/logo.png" />
-        <script type="application/ld+json">
-          {`
+        <script type="application/ld+json" dangerouslySetInnerHTML={{
+          __html: `
           {
             "@context": "https://schema.org",
             "@type": "LocalBusiness",
@@ -150,8 +150,8 @@ const Login = () => {
             "url": "https://www.cleservice.com/",
             "priceRange": "$$"
           }
-          `}
-        </script>
+          `
+        }} />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="true" />
       </Helmet>
@@ -299,6 +299,10 @@ const Login = () => {
                 Demande de devis
               </MyCustomButton>
             </Box>
+            {/* Insertion de la composante de recherche */}
+            <Box sx={{ mt: 4 }}>
+              <KeySearch />
+            </Box>
           </Container>
         </section>
 
@@ -444,7 +448,7 @@ const Login = () => {
           </Container>
         </section>
 
-        {/* SECTION - Processus de Commande Simplifié avec grand flex moderne */}
+        {/* SECTION - Processus de Commande Simplifié */}
         <section>
           <Container
             maxWidth="lg"
@@ -683,5 +687,6 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default HomePage;
+
 
