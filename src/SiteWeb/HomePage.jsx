@@ -6,7 +6,8 @@ import {
   Typography,
   Container,
   Grid,
-  IconButton
+  IconButton,
+  GlobalStyles
 } from '@mui/material';
 import { Link } from 'react-router-dom';
 import KeyIcon from '@mui/icons-material/VpnKey';
@@ -17,7 +18,6 @@ import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import VerifiedIcon from '@mui/icons-material/Verified';
 import FactoryIcon from '@mui/icons-material/Factory';
 import Slider from './PagePrincipale/Slider';
-import KeySearch from './PagePrincipale/KeySearch.jsx'; // Correction du nom de fichier
 
 // Variables de couleurs et typographie
 const primaryColor = '#2E7D32';
@@ -31,25 +31,25 @@ const pulseAnimation = {
   animation: 'pulse 2s infinite'
 };
 
-// Définition des animations en CSS-in-JS
-const GlobalStyles = styled('style')`
-  @keyframes laser {
-    0% { left: -100%; }
-    50% { left: 100%; }
-    100% { left: 100%; }
-  }
-  @keyframes pulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.03); }
-    100% { transform: scale(1); }
-  }
-  @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-  }
-`;
+// GlobalStyles pour définir les keyframes d'animations
+const globalStyles = {
+  '@keyframes laser': {
+    '0%': { left: '-100%' },
+    '50%': { left: '100%' },
+    '100%': { left: '100%' },
+  },
+  '@keyframes pulse': {
+    '0%': { transform: 'scale(1)' },
+    '50%': { transform: 'scale(1.03)' },
+    '100%': { transform: 'scale(1)' },
+  },
+  '@keyframes fadeIn': {
+    from: { opacity: 0 },
+    to: { opacity: 1 },
+  },
+};
 
-// Style commun pour les cartes, avec un fond dégradé et un effet d'animation sur hover
+// Style commun pour les cartes
 const cardStyle = {
   background: 'linear-gradient(135deg, #ffffff, #e8f5e9)',
   padding: { xs: 2, sm: 4 },
@@ -61,11 +61,11 @@ const cardStyle = {
   '&:hover': {
     transform: 'scale(1.03)',
     boxShadow: '0px 6px 16px rgba(0,0,0,0.15)',
-    background: 'linear-gradient(135deg, #f1f8e9, #ffffff)'
-  }
+    background: 'linear-gradient(135deg, #f1f8e9, #ffffff)',
+  },
 };
 
-// Bouton personnalisé avec effets d'animation et adaptation mobile
+// Bouton personnalisé
 const CustomButton = styled('button')(({ theme }) => ({
   background: `linear-gradient(45deg, ${primaryColor}, ${primaryDark})`,
   border: 'none',
@@ -84,7 +84,7 @@ const CustomButton = styled('button')(({ theme }) => ({
   animation: 'fadeIn 1s ease',
   [theme.breakpoints.down('sm')]: {
     padding: '10px 20px',
-    fontSize: '0.9rem'
+    fontSize: '0.9rem',
   },
   '&:hover': {
     background: `linear-gradient(45deg, ${primaryDark}, ${primaryColor})`,
@@ -100,10 +100,10 @@ const GradientText = styled('span')({
   color: '#fff',
   background: 'linear-gradient(45deg, #fff, #c8e6c9)',
   WebkitBackgroundClip: 'text',
-  WebkitTextFillColor: 'transparent'
+  WebkitTextFillColor: 'transparent',
 });
 
-// Composant bouton personnalisable (utilisable avec le prop "as")
+// Composant bouton personnalisable
 const MyCustomButton = React.forwardRef(function MyCustomButton(props, ref) {
   const { children, ...other } = props;
   return (
@@ -152,7 +152,7 @@ const Login = () => {
               "url": "https://www.cleservice.com/",
               "priceRange": "$$"
             }
-            `
+            `,
           }}
         />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -165,35 +165,36 @@ const Login = () => {
         </div>
       </noscript>
 
-      <GlobalStyles />
+      {/* Injection des styles globaux */}
+      <GlobalStyles styles={globalStyles} />
+
       <Box
         component="main"
         sx={{
-          mt: '50px', // Décalage vers le bas
+          mt: '50px',
           backgroundColor: '#F9F9F9',
           minHeight: '70vh',
           display: 'flex',
           flexDirection: 'column',
           fontFamily: '"Roboto", sans-serif',
-          animation: 'fadeIn 1s ease'
+          animation: 'fadeIn 1s ease',
         }}
       >
-        {/* HEADER - Bandeaux et Hero Section */}
+        {/* HEADER - Hero */}
         <header>
           <Box
             sx={{
               height: { xs: '56px', md: '0px' },
               backgroundColor: "#01591f",
-              ...pulseAnimation
+              ...pulseAnimation,
             }}
           />
           <Box
             sx={{
               height: { xs: '100px', md: '120px' },
-              backgroundColor: "#01591f"
+              backgroundColor: "#01591f",
             }}
           />
-
           <Box
             component="section"
             sx={{
@@ -203,43 +204,43 @@ const Login = () => {
               py: { xs: 2, md: 4 },
               borderBottomLeftRadius: '8px',
               borderBottomRightRadius: '8px',
-              overflow: 'hidden'
+              overflow: 'hidden',
             }}
           >
-            <Container 
+            <Container
               maxWidth="lg"
-              sx={{ 
-                position: 'relative', 
-                zIndex: 1, 
+              sx={{
+                position: 'relative',
+                zIndex: 1,
                 pt: { xs: 8, md: 10 },
                 textAlign: 'center',
-                animation: 'fadeIn 1.5s ease'
+                animation: 'fadeIn 1.5s ease',
               }}
             >
               <Typography
                 component="h1"
                 variant="h3"
                 gutterBottom
-                sx={{ 
+                sx={{
                   fontWeight: '700',
                   mb: 2,
                   fontSize: { xs: '1.75rem', md: '2.5rem' },
-                  textShadow: '1px 1px 3px rgba(0,0,0,0.1)'
+                  textShadow: '1px 1px 3px rgba(0,0,0,0.1)',
                 }}
               >
                 Un double de clé, une copie ? Facile et rapide !
               </Typography>
-              <Typography 
+              <Typography
                 component="h2"
-                variant="h4" 
-                gutterBottom 
+                variant="h4"
+                gutterBottom
                 sx={{
                   fontWeight: '700',
                   mb: 2,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  fontSize: { xs: '1.25rem', md: '1.75rem' }
+                  fontSize: { xs: '1.25rem', md: '1.75rem' },
                 }}
               >
                 Appelez le&nbsp;
@@ -259,10 +260,11 @@ const Login = () => {
                       left: '-100%',
                       width: '100%',
                       height: '100%',
-                      background: 'linear-gradient(120deg, transparent, rgba(255,255,255,0.8), transparent)',
+                      background:
+                        'linear-gradient(120deg, transparent, rgba(255,255,255,0.8), transparent)',
                       animation: 'laser 2s linear infinite',
-                      borderRadius: '2px'
-                    }
+                      borderRadius: '2px',
+                    },
                   }}
                 >
                   01 42 67 48 61
@@ -275,16 +277,16 @@ const Login = () => {
           </Box>
         </header>
 
-        {/* SECTION - Boutons d'action et recherche */}
+        {/* SECTION - Boutons d'action */}
         <section>
-          <Container 
+          <Container
             maxWidth="lg"
-            sx={{ 
-              position: 'relative', 
-              zIndex: 1, 
+            sx={{
+              position: 'relative',
+              zIndex: 1,
               py: 2,
               mx: 'auto',
-              animation: 'fadeIn 1.5s ease'
+              animation: 'fadeIn 1.5s ease',
             }}
           >
             <Box
@@ -292,7 +294,7 @@ const Login = () => {
                 display: 'flex',
                 justifyContent: 'center',
                 gap: 2,
-                flexWrap: 'wrap'
+                flexWrap: 'wrap',
               }}
             >
               <MyCustomButton as={Link} to="/trouvez.php">
@@ -315,7 +317,7 @@ const Login = () => {
               borderRadius: '12px',
               mb: { xs: 4, md: 6 },
               mx: 'auto',
-              animation: 'fadeIn 2s ease'
+              animation: 'fadeIn 2s ease',
             }}
           >
             <Typography
@@ -326,7 +328,7 @@ const Login = () => {
                 color: textPrimary,
                 textAlign: 'center',
                 mb: 4,
-                fontSize: { xs: '1.5rem', md: '2rem' }
+                fontSize: { xs: '1.5rem', md: '2rem' },
               }}
             >
               Pour gagner du temps, notre boutique est à votre disposition<br />
@@ -341,12 +343,14 @@ const Login = () => {
                 overflow: 'hidden',
                 transition: 'transform 0.5s ease',
                 '&:hover': {
-                  transform: 'scale(1.02)'
-                }
+                  transform: 'scale(1.02)',
+                },
               }}
             >
               <iframe
-                src={`https://www.google.com/maps/embed/v1/place?key=AIzaSyA7lo5IVVfLt8l5g5SiYbObTFVyEklhv5M&q=${encodeURIComponent("20 rue de Lévis, Paris, France")}`}
+                src={`https://www.google.com/maps/embed/v1/place?key=YOUR_API_KEY&q=${encodeURIComponent(
+                  '20 rue de Lévis, Paris, France'
+                )}`}
                 width="100%"
                 height="400"
                 style={{ border: 0 }}
@@ -368,7 +372,7 @@ const Login = () => {
               borderRadius: '8px',
               mb: { xs: 4, md: 6 },
               mx: 'auto',
-              animation: 'fadeIn 2s ease'
+              animation: 'fadeIn 2s ease',
             }}
           >
             <Typography
@@ -379,7 +383,7 @@ const Login = () => {
                 mb: 6,
                 textAlign: 'center',
                 color: textPrimary,
-                fontSize: { xs: '1.5rem', md: '2rem' }
+                fontSize: { xs: '1.5rem', md: '2rem' },
               }}
             >
               Nos Services En Ligne
@@ -396,8 +400,7 @@ const Login = () => {
                     Faites-vous livrer votre clé
                   </Typography>
                   <Typography component="p" sx={{ mt: 1, color: textSecondary, fontSize: { xs: '0.9rem', md: '1rem' } }}>
-                    Grâce au numéro de votre clé, nous pouvons en réaliser une copie et vous l'envoyer directement.
-                    Livraison d'un double de clé conforme à l'original.
+                    Grâce au numéro de votre clé, nous réalisons une copie et vous l'envoyons directement.
                   </Typography>
                 </Box>
               </Grid>
@@ -412,7 +415,7 @@ const Login = () => {
                     Clé au numéro
                   </Typography>
                   <Typography component="p" sx={{ mt: 1, color: textSecondary, fontSize: { xs: '0.9rem', md: '1rem' } }}>
-                    Nous reproduisons vos clés à partir de leur numéro unique. Pour les cas spécifiques, nous collaborons avec le fabricant afin d'assurer une reproduction fidèle.
+                    Nous reproduisons vos clés à partir de leur numéro unique. Pour certains cas, nous collaborons avec le fabricant pour garantir une copie fidèle.
                   </Typography>
                 </Box>
               </Grid>
@@ -457,7 +460,7 @@ const Login = () => {
               borderRadius: '12px',
               mb: { xs: 4, md: 6 },
               mx: 'auto',
-              animation: 'fadeIn 2s ease'
+              animation: 'fadeIn 2s ease',
             }}
           >
             <Typography
@@ -468,7 +471,7 @@ const Login = () => {
                 mb: 4,
                 textAlign: 'center',
                 color: textPrimary,
-                fontSize: { xs: '1.5rem', md: '2rem' }
+                fontSize: { xs: '1.5rem', md: '2rem' },
               }}
             >
               Processus de Commande Simplifié
@@ -487,14 +490,42 @@ const Login = () => {
                 transition: 'transform 0.3s ease',
                 '&:hover': {
                   transform: 'scale(1.02)',
-                }
+                },
               }}
             >
               {[
-                { step: '1. Sélectionnez votre clé', icon: <ArrowDownwardIcon sx={{ fontSize: { xs: 50, md: 70 }, transform: 'rotate(-90deg)' }} /> },
-                { step: '2. Tapez votre numéro de clé', icon: <ArrowDownwardIcon sx={{ fontSize: { xs: 50, md: 70 }, transform: 'rotate(-90deg)' }} /> },
-                { step: '3. Payez en ligne', icon: <ArrowDownwardIcon sx={{ fontSize: { xs: 50, md: 70 }, transform: 'rotate(-90deg)' }} /> },
-                { step: '4. Livraison à domicile', icon: <ArrowDownwardIcon sx={{ fontSize: { xs: 50, md: 70 }, transform: 'rotate(-90deg)' }} /> }
+                {
+                  step: '1. Sélectionnez votre clé',
+                  icon: (
+                    <ArrowDownwardIcon
+                      sx={{ fontSize: { xs: 50, md: 70 }, transform: 'rotate(-90deg)' }}
+                    />
+                  ),
+                },
+                {
+                  step: '2. Tapez votre numéro de clé',
+                  icon: (
+                    <ArrowDownwardIcon
+                      sx={{ fontSize: { xs: 50, md: 70 }, transform: 'rotate(-90deg)' }}
+                    />
+                  ),
+                },
+                {
+                  step: '3. Payez en ligne',
+                  icon: (
+                    <ArrowDownwardIcon
+                      sx={{ fontSize: { xs: 50, md: 70 }, transform: 'rotate(-90deg)' }}
+                    />
+                  ),
+                },
+                {
+                  step: '4. Livraison à domicile',
+                  icon: (
+                    <ArrowDownwardIcon
+                      sx={{ fontSize: { xs: 50, md: 70 }, transform: 'rotate(-90deg)' }}
+                    />
+                  ),
+                },
               ].map((item, index) => (
                 <Box
                   key={index}
@@ -502,12 +533,10 @@ const Login = () => {
                     display: 'flex',
                     flexDirection: 'column',
                     alignItems: 'center',
-                    minWidth: { xs: '150px', md: '200px' }
+                    minWidth: { xs: '150px', md: '200px' },
                   }}
                 >
-                  <Box sx={{ mb: 2 }}>
-                    {item.icon}
-                  </Box>
+                  <Box sx={{ mb: 2 }}>{item.icon}</Box>
                   <Typography
                     component="p"
                     variant="h6"
@@ -515,7 +544,7 @@ const Login = () => {
                       fontWeight: '500',
                       color: textSecondary,
                       textAlign: 'center',
-                      fontSize: { xs: '1rem', md: '1.125rem' }
+                      fontSize: { xs: '1rem', md: '1.125rem' },
                     }}
                   >
                     {item.step}
@@ -536,7 +565,7 @@ const Login = () => {
               borderRadius: '8px',
               mb: { xs: 4, md: 6 },
               mx: 'auto',
-              animation: 'fadeIn 2s ease'
+              animation: 'fadeIn 2s ease',
             }}
           >
             <Typography
@@ -547,7 +576,7 @@ const Login = () => {
                 mb: 4,
                 textAlign: 'center',
                 color: textPrimary,
-                fontSize: { xs: '1.5rem', md: '2rem' }
+                fontSize: { xs: '1.5rem', md: '2rem' },
               }}
             >
               Pourquoi Choisir CleService.com ?
@@ -597,7 +626,7 @@ const Login = () => {
               borderRadius: '8px',
               mb: { xs: 4, md: 6 },
               mx: 'auto',
-              animation: 'fadeIn 2s ease'
+              animation: 'fadeIn 2s ease',
             }}
           >
             <Typography
@@ -608,7 +637,7 @@ const Login = () => {
                 mb: 3,
                 textAlign: 'center',
                 color: textPrimary,
-                fontSize: { xs: '1.5rem', md: '2rem' }
+                fontSize: { xs: '1.5rem', md: '2rem' },
               }}
             >
               Nos Fournisseurs
@@ -620,7 +649,7 @@ const Login = () => {
                 textAlign: 'center',
                 color: textSecondary,
                 mb: 4,
-                fontSize: { xs: '1rem', md: '1.25rem' }
+                fontSize: { xs: '1rem', md: '1.25rem' },
               }}
             >
               Nous collaborons avec des marques de renom pour garantir la qualité de nos produits.
@@ -639,7 +668,7 @@ const Login = () => {
               borderRadius: '8px',
               mb: { xs: 4, md: 6 },
               mx: 'auto',
-              animation: 'fadeIn 2s ease'
+              animation: 'fadeIn 2s ease',
             }}
           >
             <Typography
@@ -650,25 +679,31 @@ const Login = () => {
                 mb: 6,
                 textAlign: 'center',
                 color: textPrimary,
-                fontSize: { xs: '1.5rem', md: '2rem' }
+                fontSize: { xs: '1.5rem', md: '2rem' },
               }}
             >
               Engagement envers la qualité et la sécurité
             </Typography>
             <Grid container spacing={4} justifyContent="center">
               <Grid item xs={12} sm={6} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                <IconButton sx={{ fontSize: { xs: '1.5rem', md: '2rem' }, color: primaryColor }} aria-label="Certifications et garanties">
+                <IconButton
+                  sx={{ fontSize: { xs: '1.5rem', md: '2rem' }, color: primaryColor }}
+                  aria-label="Certifications et garanties"
+                >
                   <VerifiedIcon />
                 </IconButton>
                 <Typography component="h3" variant="h6" sx={{ mt: 2, fontWeight: '600', color: textSecondary }}>
                   Certifications et garanties
                 </Typography>
                 <Typography component="p" sx={{ textAlign: 'center', color: textSecondary, fontSize: { xs: '0.9rem', md: '1rem' } }}>
-                  Nous garantissons des reproductions de clés conformes aux normes de sécurité en vigueur.
+                  Nous garantissons des reproductions de clés conformes aux normes de sécurité.
                 </Typography>
               </Grid>
               <Grid item xs={12} sm={6} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                <IconButton sx={{ fontSize: { xs: '1.5rem', md: '2rem' }, color: primaryColor }} aria-label="Sécurité des transactions">
+                <IconButton
+                  sx={{ fontSize: { xs: '1.5rem', md: '2rem' }, color: primaryColor }}
+                  aria-label="Sécurité des transactions"
+                >
                   <LockIcon />
                 </IconButton>
                 <Typography component="h3" variant="h6" sx={{ mt: 2, fontWeight: '600', color: textSecondary }}>
@@ -687,3 +722,4 @@ const Login = () => {
 };
 
 export default Login;
+
