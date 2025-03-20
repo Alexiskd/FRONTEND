@@ -342,7 +342,7 @@ const Login = () => {
               }}
             >
               <iframe
-                src="https://www.google.com/maps/embed/v1/place?key=AIzaSyA7lo5IVVfLt8l5g5SiYbObTFVyEklhv5M&q=20+rue+de+Lévis,+Paris,+France"
+                src={`https://www.google.com/maps/embed/v1/place?key=AIzaSyA7lo5IVVfLt8l5g5SiYbObTFVyEklhv5M&q=${encodeURIComponent("20 rue de Lévis, Paris, France")}`}
                 width="100%"
                 height="400"
                 style={{ border: 0 }}
@@ -683,3 +683,4 @@ const Login = () => {
 };
 
 export default Login;
+
